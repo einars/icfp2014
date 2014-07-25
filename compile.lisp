@@ -19,6 +19,7 @@
     (car . car)
     (cdr . cdr)
     (atom . atom)
+    (print . dbug)
     (cons . cons)))
 
 (defun is-builtin (exp)
