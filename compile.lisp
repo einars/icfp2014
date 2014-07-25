@@ -36,9 +36,10 @@
 (defun is-application (exp)
   (and (consp exp) (symbolp (first exp))))
 
-(defun compile-list (exp-list env)
+(defun compile-list (exp-list env &optional padding)
   (cond ((null exp-list) nil)
 	(t (append (compile-lm (first exp-list) env)
+		   (when (> (length exp-list) 1) padding)
 		   (compile-list (rest exp-list) env)))))
 
 (defun apply-defined (exp env)
@@ -57,10 +58,13 @@
       (cons (second exp) env)
       env))
 
+(defun prognize (exp)
+  `(progn ,@(cddr exp)))
+
 (defun compile-lambda (exp env &optional (lambda-sym (gensym)))
   (unless (= 3 (length exp)) (error "malformed lambda body ~A" exp))
   (unless (listp (second exp)) (error "invalid lambda list ~A" (second exp)))
-  (compile-block lambda-sym (third exp) (lambda-env exp env) '((rtn)))
+  (compile-block lambda-sym (prognize exp) (lambda-env exp env) '((rtn)))
   `((ldf ,lambda-sym)))
 
 (defun compile-if (exp env)
@@ -92,12 +96,17 @@
     ,(find-symbol-lm (second exp) env 'st)
       (ldc 0)))
 
+(defun compile-progn (exp env)
+  (let ((discard-op (find-symbol-lm '*** env 'st)))
+    (compile-list (rest exp) env (list discard-op))))
+
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
 	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'if) (compile-if exp env))
 	((is-special exp 'set) (compile-set exp env))
+	((is-special exp 'progn) (compile-progn exp env))
 	((is-special exp 'defun) (compile-define exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
