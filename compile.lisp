@@ -50,12 +50,11 @@
 (defun compile-block (sym body env linkage)
   (push (cons sym (append (compile-lm body env) linkage)) *linker-symbols*))
 
-(defun compile-lambda (exp env)
-  (let ((lambda-sym (gensym)))
-    (unless (= 3 (length exp)) (error "malformed lambda body ~A" exp))
-    (unless (listp (second exp)) (error "invalid lambda list ~A" (second exp)))
-    (compile-block lambda-sym (third exp) (cons (second exp) env) '((rtn)))
-    `((ldf ,lambda-sym))))
+(defun compile-lambda (exp env &optional (lambda-sym (gensym)))
+  (unless (= 3 (length exp)) (error "malformed lambda body ~A" exp))
+  (unless (listp (second exp)) (error "invalid lambda list ~A" (second exp)))
+  (compile-block lambda-sym (third exp) (cons (second exp) env) '((rtn)))
+  `((ldf ,lambda-sym)))
 
 (defun compile-if (exp env)
   (let ((true-sym (gensym))
@@ -70,11 +69,15 @@
 	  (compile-lm (second exp) env)
 	  `((ap ,(length (cddr exp))))))
 
+(defun compile-define (exp env)
+  (compile-lambda (rest exp) env (second exp)))
+
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
 	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'if) (compile-if exp env))
+	((is-special exp 'defun) (compile-define exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
 	((is-application exp) (apply-defined exp env))
