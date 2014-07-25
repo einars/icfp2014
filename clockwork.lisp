@@ -28,14 +28,11 @@
   (cons (+ (car pos1) (car pos2))
 	(+ (cdr pos1) (cdr pos2))))
 
-(defun list4 (a b c d)
-  (cons a (cons b (cons c (cons d 0)))))
-
 (defun dir-list ()
-  (list4 (cons  0 -1)
-	 (cons  1  0)
-	 (cons  0  1)
-	 (cons -1  0)))
+  (list (cons  0 -1)
+	(cons  1  0)
+	(cons  0  1)
+	(cons -1  0)))
 
 (defun next-pos (pos dir)
   (add-pos pos (nth (dir-list) dir)))

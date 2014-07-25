@@ -112,6 +112,12 @@
 	     (cond ,@(copy-tree (rest expressions)))))
       0))
 
+(define-lm-macro list (&rest elements)
+  (if elements
+      `(cons ,(car elements) (list ,@(cdr elements)))
+      0))
+
+
 (defun get-top-level-names (program)
   (mapcar #'second program))
 
