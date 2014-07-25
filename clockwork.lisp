@@ -85,6 +85,11 @@
 (defun null (item)
   (and (atom item) (= item 0)))
 
+(defun length (lst)
+  (if (null lst)
+      0
+      (+ 1 (length (cdr lst)))))
+
 (defun append (list1 list2)
   (if (null list1)
       list2
