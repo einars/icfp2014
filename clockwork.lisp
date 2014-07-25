@@ -1,3 +1,6 @@
+(defun and (a b)
+  (* a b))
+
 (defun nth (list n)
   (if (= n 0)
       (car list)
@@ -37,31 +40,31 @@
 (defun next-pos (pos dir)
   (add-pos pos (nth (dir-list) dir)))
 
-(defun advance-state (pos map state)
-  (if (= 2 (map-elt (next-pos pos 0) map))
-      0
-      (if (= 2 (map-elt (next-pos pos 1) map))
-	  1
-	  (if (= 2 (map-elt (next-pos pos 2) map))
-	      2
-	      (if (= 2 (map-elt (next-pos pos 3) map))
-		  3
-		  (if (= state 3) 0 (+ state 1)))))))
+(defun mod4 (val)
+  (if (>= val 4) (mod4 (- val 4)) val))
 
-(defun and (a b)
-  (* a b))
-
-(defun new-state (old-pos new-pos map state)
-  (if (and (= (car old-pos) (car new-pos))
-	   (= (cdr old-pos) (cdr new-pos)))
-      (advance-state new-pos map state)
+(defun guess-direction (old-pos pos state)
+  (if (and (= (car old-pos) (car pos))
+	   (= (cdr old-pos) (cdr pos)))
+      (mod4 (+ state 1))
       state))
+
+(defun look-at-direction (old-pos pos state map i)
+  (if (= 2 (map-elt (next-pos pos i) map))
+      i
+      (advance-state old-pos pos state map (+ i 1))))
+
+(defun advance-state (old-pos pos state map i)
+  (if (= i 4)
+      (guess-direction old-pos pos state)
+      (look-at-direction old-pos pos state map i)))
 
 (defun main ()
   (cons (cons 0 0)
 	(lambda (old-pos world)
 	  (cons (lambda-man-pos world)
-		(new-state old-pos
-			   (lambda-man-pos world)
-			   (car world)
-			   (lambda-man-direction world))))))
+		(advance-state old-pos
+			       (lambda-man-pos world)
+			       (lambda-man-direction world)
+			       (car world)
+			       0)))))
