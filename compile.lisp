@@ -117,6 +117,10 @@
       `(cons ,(car elements) (list ,@(cdr elements)))
       0))
 
+(define-lm-macro and (&rest clauses)
+  (if clauses
+      `(if ,(car clauses) (and ,@(cdr clauses)) 0)
+      1))
 
 (defun get-top-level-names (program)
   (mapcar #'second program))

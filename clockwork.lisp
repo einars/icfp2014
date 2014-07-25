@@ -1,6 +1,3 @@
-(defun and (a b)
-  (* a b))
-
 (defun nth (list n)
   (if (= n 0)
       (car list)
