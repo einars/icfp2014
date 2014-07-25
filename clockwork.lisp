@@ -25,14 +25,10 @@
   (cons (+ (car pos1) (car pos2))
 	(+ (cdr pos1) (cdr pos2))))
 
-(defun dir-list ()
-  (list (cons  0 -1)
-	(cons  1  0)
-	(cons  0  1)
-	(cons -1  0)))
+(defvar dir-list)
 
 (defun next-pos (pos dir)
-  (add-pos pos (nth (dir-list) dir)))
+  (add-pos pos (nth dir-list dir)))
 
 (defun mod4 (val)
   (if (>= val 4) (mod4 (- val 4)) val))
@@ -53,7 +49,14 @@
       (guess-direction old-pos pos state)
       (look-at-direction old-pos pos state map i)))
 
+(defun init-dirlist ()
+  (set dir-list (list (cons  0 -1)
+		      (cons  1  0)
+		      (cons  0  1)
+		      (cons -1  0))))
+
 (defun main ()
+  (init-dirlist)
   (cons (cons 0 0)
 	(lambda (old-pos world)
 	  (cons (lambda-man-pos world)
