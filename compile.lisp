@@ -13,8 +13,12 @@
     (- . sub)
     (* . mul)
     (/ . div)
+    (= . ceq)
+    (> . cgt)
+    (>= . cgte)
     (car . car)
     (cdr . cdr)
+    (atom . atom)
     (cons . cons)))
 
 (defun is-builtin (exp)
