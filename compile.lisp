@@ -51,10 +51,15 @@
 (defun compile-block (sym body env linkage)
   (push (cons sym (append (compile-lm body env) linkage)) *linker-symbols*))
 
+(defun lambda-env (exp env)
+  (if (not (eq 'main (first exp)))
+      (cons (second exp) env)
+      env))
+
 (defun compile-lambda (exp env &optional (lambda-sym (gensym)))
   (unless (= 3 (length exp)) (error "malformed lambda body ~A" exp))
   (unless (listp (second exp)) (error "invalid lambda list ~A" (second exp)))
-  (compile-block lambda-sym (third exp) (cons (second exp) env) '((rtn)))
+  (compile-block lambda-sym (third exp) (lambda-env exp env) '((rtn)))
   `((ldf ,lambda-sym)))
 
 (defun compile-if (exp env)
