@@ -20,7 +20,6 @@
     (car . car)
     (cdr . cdr)
     (atom . atom)
-    (print . dbug)
     (cons . cons)))
 
 (defun is-builtin (exp)
@@ -62,7 +61,6 @@
   `(progn ,@(cddr exp)))
 
 (defun compile-lambda (exp env &optional (lambda-sym (gensym)))
-  (unless (= 3 (length exp)) (error "malformed lambda body ~A" exp))
   (unless (listp (second exp)) (error "invalid lambda list ~A" (second exp)))
   (compile-block lambda-sym (prognize exp) (lambda-env exp env) '((rtn)))
   `((ldf ,lambda-sym)))
@@ -96,6 +94,10 @@
     ,(find-symbol-lm (second exp) env 'st)
       (ldc 0)))
 
+(defun compile-print (exp env)
+  `(,@(compile-lm (second exp) env)
+      (dbug) (ldc 0)))
+
 (defun compile-progn (exp env)
   (let ((discard-op (find-symbol-lm '*** env 'st)))
     (compile-list (rest exp) env (list discard-op))))
@@ -106,10 +108,12 @@
 	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'if) (compile-if exp env))
 	((is-special exp 'set) (compile-set exp env))
+	((is-special exp 'print) (compile-print exp env))
 	((is-special exp 'progn) (compile-progn exp env))
 	((is-special exp 'defun) (compile-define exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
+	((is-special exp 'defvar) nil)
 	((is-macro exp) (compile-macro exp env))
 	((is-application exp) (apply-defined exp env))
 	(t (error "bad expression ~A" exp))))
@@ -137,7 +141,7 @@
       `(if ,(car clauses) (and ,@(cdr clauses)) 0)
       1))
 
-(defun get-top-level-names (program)
+(defun get-top-level (program)
   (mapcar #'second program))
 
 (defun read-program-defines (stream &optional accumulator)
@@ -150,8 +154,10 @@
   (with-open-file (stream filename :direction :input)
     (read-program-defines stream)))
 
-(defun ldf-name (top-level-name)
-  `(ldf ,top-level-name))
+(defun init-globals (top-level-name)
+  (if (eq 'defun (first top-level-name))
+      `(ldf ,(second top-level-name))
+      `(ldc 0)))
 
 (defun mappend (fn list)
   (apply #'append (mapcar fn list)))
@@ -171,7 +177,7 @@
 (defun flatten-program (top-level)
   (flatten-chunks
    `((dum ,(length top-level))
-     ,@(mapcar #'ldf-name top-level)
+     ,@(mapcar #'init-globals top-level)
      (ldf main)
      (rap ,(length top-level))
      (stop))))
@@ -201,7 +207,6 @@
 (defun compile-program (filename)
   (let* ((*linker-symbols* nil)
 	 (*symbol-offsets* nil)
-	 (program (read-program filename))
-	 (top-level-functions (get-top-level-names program)))
-    (compile-list program (list top-level-functions))
-    (print-program (resolve-links (flatten-program top-level-functions)))))
+	 (program (cons '(defvar ***) (read-program filename))))
+    (compile-list program (list (get-top-level program)))
+    (print-program (resolve-links (flatten-program program)))))
