@@ -41,7 +41,7 @@
 
 (defun apply-defined (exp env)
   (append (compile-list (rest exp) env)
-	  `((ldf ,(first exp))
+	  `(,(find-symbol-lm (first exp) env)
 	    (ap ,(length (rest exp))))))
 
 (defun is-special (exp sym)
@@ -82,3 +82,20 @@
 	((is-special exp 'funcall) (compile-funcall exp env))
 	((is-application exp) (apply-defined exp env))
 	(t (error "bad expression ~A" exp))))
+
+(defun get-top-level-names (program)
+  (mapcar #'second program))
+
+(defun read-program-defines (stream &optional accumulator)
+  (let ((define (read stream nil)))
+    (if (null define)
+	accumulator
+	(read-program-defines stream (cons define accumulator)))))
+
+(defun read-program (filename)
+  (with-open-file (stream filename :direction :input)
+    (read-program-defines stream)))
+
+(defun compile-program (filename)
+  (let ((program (read-program filename)))
+    (compile-list program (list (get-top-level-names program)))))
