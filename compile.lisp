@@ -1,4 +1,4 @@
-(defvar *linker-symbols* nil)
+(defparameter *linker-symbols* nil)
 
 (defun el-num (var frame)
   (- (length frame) (length (member var frame))))
@@ -8,16 +8,24 @@
 	((member var (first env)) `(ld ,depth ,(el-num var (first env))))
 	(t (find-symbol-lm var (rest env) (1+ depth)))))
 
-(defun is-arithmetic (exp)
-  (and (consp exp) (member (first exp) '(+ - / *))))
+(defparameter *builtin-ops*
+  '((+ . add)
+    (- . sub)
+    (* . mul)
+    (/ . div)
+    (car . car)
+    (cdr . cdr)
+    (cons . cons)))
 
-(defun get-arithmetic-opcode (op)
-  (list (list (cdr (assoc op '((+ . add) (- . sub) (* . mul) (/ . div)))))))
+(defun is-builtin (exp)
+  (and (consp exp) (assoc (first exp) *builtin-ops*)))
 
-(defun compile-arithmetic (exp env)
-  (append (compile-lm (second exp) env)
-	  (compile-lm (third exp) env)
-	  (get-arithmetic-opcode (first exp))))
+(defun get-builtin-opcode (op)
+  (list (list (cdr (assoc op *builtin-ops*)))))
+
+(defun compile-builtin (exp env)
+  (append (compile-list (rest exp) env)
+	  (get-builtin-opcode (first exp))))
 
 (defun is-application (exp)
   (and (consp exp) (symbolp (first exp))))
@@ -52,7 +60,7 @@
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
-	((is-arithmetic exp) (compile-arithmetic exp env))
+	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-application exp) (apply-defined exp env))
 	(t (error "bad expression ~A" exp))))
