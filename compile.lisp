@@ -96,6 +96,58 @@
   (with-open-file (stream filename :direction :input)
     (read-program-defines stream)))
 
+(defun ldf-name (top-level-name)
+  `(ldf ,top-level-name))
+
+(defun mappend (fn list)
+  (apply #'append (mapcar fn list)))
+
+(defparameter *symbol-offsets* nil)
+
+(defun calculate-offsets (offset &optional (seq *linker-symbols*))
+  (when (consp seq)
+    (cons (cons (car (first seq)) offset)
+	  (calculate-offsets (+ offset (length (cdr (first seq))))
+			     (rest seq)))))
+
+(defun flatten-chunks (entry)
+  (setf *symbol-offsets* (calculate-offsets (length entry)))
+  (append entry (mappend #'cdr *linker-symbols*)))
+
+(defun flatten-program (top-level)
+  (flatten-chunks
+   `((dum ,(length top-level))
+     ,@(mapcar #'ldf-name top-level)
+     (ldf main)
+     (rap ,(length top-level))
+     (stop))))
+
+(defun resolve-symbol (sym)
+  (if (not (symbolp sym))
+      sym
+      (let ((offset (assoc sym *symbol-offsets*)))
+	(if offset
+	    (cdr offset)
+	    (error "unknown symbol ~A" sym)))))
+
+(defun resolve-symbols (instruction-body)
+  (when instruction-body
+    (cons (resolve-symbol (first instruction-body))
+	  (resolve-symbols (rest instruction-body)))))
+
+(defun resolve-instruction (instruction)
+  (cons (first instruction) (resolve-symbols (rest instruction))))
+
+(defun resolve-links (program)
+  (mapcar #'resolve-instruction program))
+
+(defun print-program (program)
+  (format t "~{~{~A ~}~%~}" program))
+
 (defun compile-program (filename)
-  (let ((program (read-program filename)))
-    (compile-list program (list (get-top-level-names program)))))
+  (let* ((*linker-symbols* nil)
+	 (*symbol-offsets* nil)
+	 (program (read-program filename))
+	 (top-level-functions (get-top-level-names program)))
+    (compile-list program (list top-level-functions))
+    (print-program (resolve-links (flatten-program top-level-functions)))))
