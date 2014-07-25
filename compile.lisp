@@ -4,10 +4,10 @@
 (defun el-num (var frame)
   (- (length frame) (length (member var frame))))
 
-(defun find-symbol-lm (var env &optional (depth 0))
+(defun find-symbol-lm (var env &optional (op 'ld) (depth 0))
   (cond ((null env) (error "unknown variable ~A" var))
-	((member var (first env)) `(ld ,depth ,(el-num var (first env))))
-	(t (find-symbol-lm var (rest env) (1+ depth)))))
+	((member var (first env)) `(,op ,depth ,(el-num var (first env))))
+	(t (find-symbol-lm var (rest env) op (1+ depth)))))
 
 (defparameter *builtin-ops*
   '((+ . add)
@@ -87,11 +87,17 @@
 		     (rest exp))
 	      env))
 
+(defun compile-set (exp env)
+  `(,@(compile-lm (third exp) env)
+    ,(find-symbol-lm (second exp) env 'st)
+      (ldc 0)))
+
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
 	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'if) (compile-if exp env))
+	((is-special exp 'set) (compile-set exp env))
 	((is-special exp 'defun) (compile-define exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
