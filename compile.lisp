@@ -1,4 +1,5 @@
 (defparameter *linker-symbols* nil)
+(defparameter *macro-symbols* nil)
 
 (defun el-num (var frame)
   (- (length frame) (length (member var frame))))
@@ -78,6 +79,14 @@
 (defun compile-define (exp env)
   (compile-lambda (rest exp) env (second exp)))
 
+(defun is-macro (exp)
+  (assoc (first exp) *macro-symbols*))
+
+(defun compile-macro (exp env)
+  (compile-lm (apply (cdr (assoc (first exp) *macro-symbols*))
+		     (rest exp))
+	      env))
+
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
@@ -86,8 +95,22 @@
 	((is-special exp 'defun) (compile-define exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
+	((is-macro exp) (compile-macro exp env))
 	((is-application exp) (apply-defined exp env))
 	(t (error "bad expression ~A" exp))))
+
+(defmacro define-lm-macro (name lambda-list &body body)
+  `(push (cons ',name (lambda ,lambda-list
+		       ,@body))
+	 *macro-symbols*))
+
+(define-lm-macro cond (&rest expressions)
+  (if expressions
+      (let ((expr (copy-tree (first expressions))))
+	`(if ,(car expr)
+	     ,(cadr expr)
+	     (cond ,@(copy-tree (rest expressions)))))
+      0))
 
 (defun get-top-level-names (program)
   (mapcar #'second program))
