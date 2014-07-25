@@ -52,14 +52,14 @@
       (look-at-direction old-pos pos state i)))
 
 (defun init-globals ()
-  (set dir-list (list (cons  0 -1)
-		      (cons  1  0)
-		      (cons  0  1)
-		      (cons -1  0)))
   (set dir-N 0)
   (set dir-E 1)
   (set dir-S 2)
-  (set dir-W 3))
+  (set dir-W 3)
+  (set dir-list (list (cons  0 -1)
+		      (cons  1  0)
+		      (cons  0  1)
+		      (cons -1  0))))
 
 (defun opposite (direction)
   (mod4 (+ direction 2)))
@@ -81,6 +81,19 @@
 (defun pos-eq (pos1 pos2)
   (and (= (car pos1) (car pos2))
        (= (cdr pos1) (cdr pos2))))
+
+(defun null (item)
+  (and (atom item) (= item 0)))
+
+(defun append (list1 list2)
+  (if (null list1)
+      list2
+      (cons (car list1) (append (cdr list1) list2))))
+
+(defun map (fn lst)
+  (if (null lst)
+      0
+      (cons (funcall fn (car lst)) (map fn (cdr lst)))))
 
 (defun main ()
   (init-globals)
