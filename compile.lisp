@@ -65,11 +65,17 @@
     (append (compile-lm (second exp) env)
 	    `((sel ,true-sym ,false-sym)))))
 
+(defun compile-funcall (exp env)
+  (append (compile-list (cddr exp) env)
+	  (compile-lm (second exp) env)
+	  `((ap ,(length (cddr exp))))))
+
 (defun compile-lm (exp env)
   (cond ((numberp exp) `((ldc ,exp)))
 	((symbolp exp) (list (find-symbol-lm exp env)))
 	((is-builtin exp) (compile-builtin exp env))
 	((is-special exp 'if) (compile-if exp env))
 	((is-special exp 'lambda) (compile-lambda exp env))
+	((is-special exp 'funcall) (compile-funcall exp env))
 	((is-application exp) (apply-defined exp env))
 	(t (error "bad expression ~A" exp))))
