@@ -56,8 +56,10 @@
     | "*=" { MULTEQ }
     | "/=" { DIVEQ }
 
-    | "==" { EQUALS }
     | "=" { EQUALS }
+    | "==" { EQUALS }
+    | "!=" { NEQUALS }
+    | "<>" { NEQUALS }
     | "{" { OPEN_BRACE }
     | "}" { CLOSE_BRACE }
 

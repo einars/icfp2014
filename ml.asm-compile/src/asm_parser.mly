@@ -17,8 +17,9 @@
 %token CMD_JEQ
 %token CMD_INT
 %token CMD_HLT
+%token CMD_JMP
 
-%token EQU IF EQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ
+%token EQU IF EQUALS NEQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ
 
 %token EOF
 
@@ -31,6 +32,7 @@ prog:
 stmt:
     | CMD_MOV ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Mov (dest, src) }
 
+    | IF; x = IDENTIFIER; NEQUALS; y = IDENTIFIER; smts = braced_block; { `BlockJneq (x, y, smts) }
     | IF; x = IDENTIFIER; EQUALS; y = IDENTIFIER; smts = braced_block; { `BlockJeq (x, y, smts) }
     | IF; x = IDENTIFIER; GT; y = IDENTIFIER; smts = braced_block; { `BlockJgt (x, y, smts) }
     | IF; x = IDENTIFIER; LT; y = IDENTIFIER; smts = braced_block; { `BlockJlt (x, y, smts) }
@@ -51,6 +53,7 @@ stmt:
     | CMD_INC ; dest = IDENTIFIER;                   { `Inc (dest) }
     | CMD_DEC ; dest = IDENTIFIER;                   { `Dec (dest) }
 
+    | CMD_JMP ; targ = IDENTIFIER; opt_comma; { `Jmp (targ) }
     | CMD_JLT ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jlt (targ, x, y) }
     | CMD_JGT ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jgt (targ, x, y) }
     | CMD_JEQ ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jeq (targ, x, y) }

@@ -71,9 +71,10 @@ let gather_labels codes =
         jmap := add_to_map !jmap l (string_of_int pc);
         _rec pc rest;
 
-    | `BlockJeq (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
-    | `BlockJgt (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
-    | `BlockJlt (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
+    | `BlockJneq (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
+    | `BlockJeq (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
+    | `BlockJgt (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
+    | `BlockJlt (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
 
     | h::rest -> _rec (succ pc) rest
   in
@@ -93,6 +94,7 @@ let calc_code_size c =
     | `Xor _ :: rest -> _rec (pc + 1) rest
     | `Inc _ :: rest -> _rec (pc + 1) rest
     | `Dec _ :: rest -> _rec (pc + 1) rest
+    | `Jmp _ :: rest -> _rec (pc + 1) rest
     | `Jlt _ :: rest -> _rec (pc + 1) rest
     | `Jgt _ :: rest -> _rec (pc + 1) rest
     | `Jeq _ :: rest -> _rec (pc + 1) rest
@@ -100,9 +102,10 @@ let calc_code_size c =
     | `Hlt :: rest -> _rec (pc + 1) rest
     | `Label _ :: rest -> _rec pc rest
     | `Defconst _ :: rest -> _rec pc rest
-    | `BlockJeq (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
-    | `BlockJgt (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
-    | `BlockJlt (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
+    | `BlockJneq (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
+    | `BlockJeq (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
+    | `BlockJgt (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
+    | `BlockJlt (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
 
   in
   _rec 0 c
@@ -139,26 +142,36 @@ let print_codes code labels =
     | `Inc (a)    -> printf "INC %s\n" (get_label a); pc := !pc + 1
     | `Dec (a)    -> printf "DEC %s\n" (get_label a); pc := !pc + 1
 
-    | `Jlt (a, b, c) -> printf "JLT %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
-    | `Jgt (a, b, c) -> printf "JGT %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
-    | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
+    | `Jlt (a, b, c) -> printf "JLT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
+    | `Jgt (a, b, c) -> printf "JGT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
+    | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
+    | `Jmp (t) -> printf "JEQ %s, 0, 0\n" (get_label t); pc := !pc + 1
+
+    | `BlockJneq (a, b, codes) ->
+        let code_size = calc_code_size codes in
+        printf "JEQ %d, %s, %s\n" (!pc + code_size + 1) (get_label a) (get_label b);
+        pc := !pc + 1;
+        List.iter codes iter_fn;
 
     | `BlockJeq (a, b, codes) ->
         let code_size = calc_code_size codes in
-        printf "JEQ %d, %s, %s\n" (!pc + code_size + 1) (get_label a) (get_label b);
-        pc := !pc + + 1;
+        printf "JEQ %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
+        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
+        pc := !pc + 2;
         List.iter codes iter_fn;
 
     | `BlockJgt (a, b, codes) ->
         let code_size = calc_code_size codes in
-        printf "JGT %d, %s, %s\n" (!pc + code_size + 1) (get_label a) (get_label b);
-        pc := !pc + + 1;
+        printf "JGT %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
+        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
+        pc := !pc + 2;
         List.iter codes iter_fn;
 
     | `BlockJlt (a, b, codes) ->
         let code_size = calc_code_size codes in
-        printf "JLT %d, %s, %s\n" (!pc + code_size + 1) (get_label a) (get_label b);
-        pc := !pc + + 1;
+        printf "JLT %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
+        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
+        pc := !pc + 2;
         List.iter codes iter_fn;
 
 
