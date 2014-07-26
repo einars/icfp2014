@@ -26,7 +26,7 @@
        (= (cdr pos1) (cdr pos2))))
 
 (defun null (item)
-  (and (atom item) (= item 0)))
+  (and (atom item) (= item nil)))
 
 (defun length (lst)
   (if (null lst)
@@ -42,3 +42,8 @@
   (if (null lst)
       nil
       (cons (funcall fn (car lst)) (map fn (cdr lst)))))
+
+(defun member-if (predicate lst)
+  (cond ((null lst) nil)
+	((funcall predicate (car lst)) lst)
+	(1 (member-if predicate (cdr lst)))))

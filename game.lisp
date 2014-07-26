@@ -28,8 +28,18 @@
 (defun pos-contents (pos)
   (map-elt pos *map*))
 
-(defun check-wall (pos)
-  (= (pos-contents pos) 0))
+(defun ghost-positions ()
+  (map second (third *world*)))
+
+(defun is-ghost (pos)
+  (member-if (lambda (ghost-pos) (pos-eq pos ghost-pos)) (ghost-positions)))
+
+(defun is-obstacle (pos)
+  (or (= (pos-contents pos) 0)
+      (is-ghost pos)))
+
+(defun can-move (pos dir)
+  (is-obstacle (move pos dir)))
 
 (defun init-world (world)
   (set *world* world)
