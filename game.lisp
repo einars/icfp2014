@@ -4,6 +4,8 @@
 (defvar +dir-W+ 3)
 
 (defvar +wall+ 0)
+(defvar +pill+ 2)
+(defvar +power-pill+ 3)
 
 (defvar *map*)
 (defvar *world*)
@@ -36,6 +38,10 @@
 
 (defun is-ghost (pos)
   (member-if (lambda (ghost-pos) (pos-eq pos ghost-pos)) (ghost-positions)))
+
+(defun is-consumable (pos)
+  (or (= (pos-contents pos) +pill+)
+      (= (pos-contents pos) +power-pill+)))
 
 (defun is-obstacle (pos)
   (or (= (pos-contents pos) +wall+)
