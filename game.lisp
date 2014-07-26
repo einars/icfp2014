@@ -4,16 +4,17 @@
 (defvar +dir-W+)
 
 (defvar *map*)
+(defvar *world*)
 (defvar *dir-list*)
 
-(defun lambda-man-state (world)
-  (second world))
+(defun lambda-man-state ()
+  (second *world*))
 
-(defun lambda-man-pos (world)
-  (second (lambda-man-state world)))
+(defun lambda-man-pos ()
+  (second (lambda-man-state)))
 
-(defun lambda-man-direction (world)
-  (third (lambda-man-state world)))
+(defun lambda-man-direction ()
+  (third (lambda-man-state)))
 
 (defun map-elt (pos map)
   (nth (nth map (cdr pos)) (car pos)))
@@ -31,6 +32,7 @@
   (= (pos-contents pos) 0))
 
 (defun init-world (world)
+  (set *world* world)
   (set *map* (car world)))
 
 (defun init-globals ()

@@ -19,8 +19,8 @@
   (cons (cons 0 0)
 	(lambda (old-pos world)
 	  (init-world world)
-	  (cons (lambda-man-pos world)
+	  (cons (lambda-man-pos)
 		(advance-state old-pos
-			       (lambda-man-pos world)
-			       (lambda-man-direction world)
+			       (lambda-man-pos)
+			       (lambda-man-direction)
 			       0)))))
