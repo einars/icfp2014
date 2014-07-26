@@ -1,17 +1,23 @@
+
+(defvar +max-depth+ 5)
+
 (defun try-move-at-point (pos direction)
   (let ((new-pos (move (car pos) direction))
 	(excluded-move (second pos))
 	(original-direction (third pos))
-	(contents (fourth pos)))
+	(contents (fourth pos))
+	(depth (nth pos 4)))
     (if (or (is-obstacle new-pos)
-	    (pos-eq new-pos excluded-move))
+	    (pos-eq new-pos excluded-move)
+	    (> depth +max-depth+))
 	0
 	(list (list new-pos
 		    (car pos)
 		    (if (> original-direction 3)
 			direction
 			original-direction)
-		    (pos-contents new-pos))))))
+		    (pos-contents new-pos)
+		    (+ 1 depth))))))
 
 (defun moves-at-point (pos)
   (flatten
@@ -37,11 +43,11 @@
 	     (null (mappend check-point-pos new-list)))
 	(find-closest-point-direction-rec new-list)
 	(if (null new-list)
-	    +dir-N+
+	    (advance-state (lambda-man-pos))
 	    (car (mappend check-point-pos new-list))))))
 
 (defun find-closest-point-direction (pos)
-  (find-closest-point-direction-rec (list (list pos pos 99 99))))
+  (find-closest-point-direction-rec (list (list pos pos 99 99 0))))
 
 (defun main ()
   (init-globals)
