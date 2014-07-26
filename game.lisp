@@ -1,7 +1,9 @@
-(defvar +dir-N+)
-(defvar +dir-S+)
-(defvar +dir-E+)
-(defvar +dir-W+)
+(defvar +dir-N+ 0)
+(defvar +dir-S+ 1)
+(defvar +dir-E+ 2)
+(defvar +dir-W+ 3)
+
+(defvar +wall+ 0)
 
 (defvar *map*)
 (defvar *world*)
@@ -35,7 +37,7 @@
   (member-if (lambda (ghost-pos) (pos-eq pos ghost-pos)) (ghost-positions)))
 
 (defun is-obstacle (pos)
-  (or (= (pos-contents pos) 0)
+  (or (= (pos-contents pos) +wall+)
       (is-ghost pos)))
 
 (defun can-move (pos dir)
@@ -46,10 +48,6 @@
   (set *map* (car world)))
 
 (defun init-globals ()
-  (set +dir-N+ 0)
-  (set +dir-E+ 1)
-  (set +dir-S+ 2)
-  (set +dir-W+ 3)
   (set *dir-list* (list (cons  0 -1)
 			(cons  1  0)
 			(cons  0  1)

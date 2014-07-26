@@ -1,4 +1,5 @@
 (defvar nil)
+(defvar t 1)
 
 (defun nth (list n)
   (if (= n 0)
@@ -46,4 +47,4 @@
 (defun member-if (predicate lst)
   (cond ((null lst) nil)
 	((funcall predicate (car lst)) lst)
-	(1 (member-if predicate (cdr lst)))))
+	(t (member-if predicate (cdr lst)))))

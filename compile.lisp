@@ -162,7 +162,7 @@
 (defun init-globals (top-level-name)
   (if (eq 'defun (first top-level-name))
       `(ldf ,(second top-level-name))
-      `(ldc 0)))
+      `(ldc ,(or (third top-level-name) 0))))
 
 (defun mappend (fn list)
   (apply #'append (mapcar fn list)))
