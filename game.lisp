@@ -36,7 +36,7 @@
 (defun ghost-positions ()
   (map second (third *world*)))
 
-(defun is-ghost (pos)
+(defun matching-ghost (pos)
   (member-if (lambda (ghost-pos) (pos-eq pos ghost-pos)) (ghost-positions)))
 
 (defun is-consumable (pos)
@@ -45,7 +45,7 @@
 
 (defun is-obstacle (pos)
   (or (= (pos-contents pos) +wall+)
-      (is-ghost pos)))
+      (not (null (matching-ghost pos)))))
 
 (defun can-move (pos dir)
   (null (is-obstacle (move pos dir))))
