@@ -30,9 +30,12 @@
 
 (defun find-closest-point-direction-rec (pos-list)
   (set pos-list (mappend moves-at-point pos-list))
-  (if (null (mappend check-point-pos pos-list))
+  (if (and (not (null pos-list))
+	   (null (mappend check-point-pos pos-list)))
       (find-closest-point-direction-rec pos-list)
-      (car (mappend check-point-pos pos-list))))
+      (if (null pos-list)
+	  +dir-N+
+	  (car (mappend check-point-pos pos-list)))))
 
 (defun find-closest-point-direction (pos)
   (find-closest-point-direction-rec (list (list pos pos 99 99))))
