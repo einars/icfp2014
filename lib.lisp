@@ -83,6 +83,12 @@
 (defun abs (val)
   (if (> val 0) val (- 0 val)))
 
+(defun min (a b)
+  (if (> a b) b a))
+
+(defun max (a b)
+  (if (> a b) a b))
+
 (defun manhattan (pos1 pos2)
   (+ (abs (- (car pos1) (car pos2)))
      (abs (- (cdr pos1) (cdr pos2)))))
