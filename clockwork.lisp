@@ -64,14 +64,25 @@
 (defun hit (state)
   (pos-eq *closest-pill* (state-pos state)))
 
+(defun insert (state list)
+  (cond ((null list) (list state))
+	((> (state-distance (car list))
+	    (state-distance state))
+	 (cons state list))
+	(t (cons (car list) (insert state (cdr list))))))
+
 (defun push-state (state)
-  (set *new-states* (cons state *new-states*)))
+  (set *new-states* (insert state *new-states*)))
 
 (defun is-not-element (a list)
   (null (member-if (lambda (b) (pos-eq (state-pos a) (state-pos b))) list)))
 
+(defun is-new-state (state)
+  (and (is-not-element state *old-states*)
+       (is-not-element state *new-states*)))
+
 (defun dispatch-neighbor (state rest-states)
-  (if (is-not-element state *old-states*) (push-state state) nil)
+  (if (is-new-state state) (push-state state) nil)
   (sort-neighbors rest-states))
 
 (defun sort-neighbors (states)
@@ -93,5 +104,6 @@
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
 	    (pill-column *map* 0 512)
+	    (set *old-states* nil)
 	    (set *new-states* (list (initial-state)))
 	    (cons 0 (get-desired-direction)))))
