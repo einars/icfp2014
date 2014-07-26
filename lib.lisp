@@ -38,6 +38,9 @@
 (defun null (item)
   (and (atom item) (= item nil)))
 
+(defun consp (item)
+  (not (atom item)))
+
 (defun length (lst)
   (if (null lst)
       nil
