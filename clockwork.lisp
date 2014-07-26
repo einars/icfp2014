@@ -83,7 +83,8 @@
   (boards-at-depth (list (current-board)) depth))
 
 (defun goodness (board)
-  (get-board-pills board))
+  (+ (- 512 (manhattan (get-board-pos board) *closest-pill*))
+     (get-board-pills board)))
 
 (defun filter-best (board-lst score best)
   (cond ((null board-lst) best)
