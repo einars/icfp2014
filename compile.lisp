@@ -217,6 +217,6 @@
 (defun compile-program (filename)
   (let* ((*linker-symbols* nil)
 	 (*symbol-offsets* nil)
-	 (program (cons '(defvar ***) (read-program filename))))
-    (compile-list program (list (get-top-level program)))
+	 (program (append (list '(defvar ***)) (read-program filename))))
+    (compile-list program (list (get-top-level program) '(arg1 arg2)))
     (print-program (resolve-links (flatten-program program)))))
