@@ -43,7 +43,7 @@
                              (if (= 2 elem) 0 0)
                              (if (= 3 elem) 20 0))
                              (if (moving-closer? old-pos pos target) 10 0))
-                             (if backwards? -3 1)))))
+                             (if backwards? -10 1)))))
 
 (defun choose-move (s0 s1 s2 s3)
   ; (print (cons s0 (cons s1 (cons s2 s3))))
