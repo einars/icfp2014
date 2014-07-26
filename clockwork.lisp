@@ -34,7 +34,8 @@
   (remove-if (lambda (dir) (not (is-legal-move board dir))) *all-dirs*))
 
 (defun possible-dirs (board)
-  (or-if (possible-forward-dirs board) (opposite (get-board-dir board))))
+  (or-if (possible-forward-dirs board)
+	 (list (opposite (get-board-dir board)))))
 
 (defun boards-from (board)
   (map (lambda (dir) (move-board board dir)) (possible-dirs board)))
@@ -56,7 +57,7 @@
   (cons (cons 0 0)
 	(lambda (old-pos world)
 	  (init-world world)
-	  (boards-at-depth (list (current-board)) 3)
+	  (boards-at-depth (list (current-board)) 5)
 	  (cons (lambda-man-pos)
 		(advance-state old-pos
 			       (lambda-man-pos)
