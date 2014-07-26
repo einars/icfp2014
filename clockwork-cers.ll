@@ -111,7 +111,7 @@
       list2
       (cons (car list1) (append-2 (cdr list1) list2))))
 
-(defun append (lists)
+(defun flatten (lists)
   (reduce (lambda (x y)
 	    (append-2 x y))
 	  0
@@ -133,7 +133,7 @@
 		    (pos-contents new-pos))))))
 
 (defun moves-at-point (pos)
-  (append
+  (flatten
    (list
     (try-move-at-point pos dir-N)
     (try-move-at-point pos dir-E)
