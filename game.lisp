@@ -7,6 +7,7 @@
 
 (defvar *map*)
 (defvar *world*)
+(defvar *all-dirs*)
 (defvar *dir-list*)
 
 (defun lambda-man-state ()
@@ -48,6 +49,7 @@
   (set *map* (car world)))
 
 (defun init-globals ()
+  (set *all-dirs* (list 0 1 2 3))
   (set *dir-list* (list (cons  0 -1)
 			(cons  1  0)
 			(cons  0  1)

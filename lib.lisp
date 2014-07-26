@@ -15,6 +15,12 @@
 (defun third (list)
   (nth list 2))
 
+(defun not (a)
+  (if a 0 t))
+
+(defun or-if (a b)
+  (if a a b))
+
 (defun add-pos (pos1 pos2)
   (cons (+ (car pos1) (car pos2))
 	(+ (cdr pos1) (cdr pos2))))
@@ -48,3 +54,9 @@
   (cond ((null lst) nil)
 	((funcall predicate (car lst)) lst)
 	(t (member-if predicate (cdr lst)))))
+
+(defun remove-if (predicate lst)
+  (cond ((null lst) nil)
+	((funcall predicate (car lst))
+	 (remove-if predicate (cdr lst)))
+	(t (cons (car lst) (remove-if predicate (cdr lst))))))
