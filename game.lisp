@@ -33,11 +33,15 @@
 (defun pos-contents (pos)
   (map-elt pos *map*))
 
-(defun ghost-positions ()
-  (map second (third *world*)))
+(defun ghost-state ()
+  (third *world*))
+
+(defun bad-ghost (pos ghost)
+  (and (= 0 (first ghost)) ; vitality == standard
+       (pos-eq pos (second ghost))))
 
 (defun matching-ghost (pos)
-  (member-if (lambda (ghost-pos) (pos-eq pos ghost-pos)) (ghost-positions)))
+  (member-if (lambda (ghost) (bad-ghost pos ghost)) (ghost-state)))
 
 (defun is-consumable (pos)
   (or (= (pos-contents pos) +pill+)
