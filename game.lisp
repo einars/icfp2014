@@ -36,6 +36,9 @@
 (defun ghost-state ()
   (third *world*))
 
+(defun ghost-positions ()
+  (map second (third *world*)))
+
 (defun bad-ghost (pos ghost)
   (and (= 0 (first ghost))
        (> 2 (manhattan pos (second ghost)))))
