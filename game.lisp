@@ -83,7 +83,10 @@
 (defun create-annotated-map ()
   (map (lambda (row)
 	 (map (lambda (cell)
-		(cons cell 0))
+		(cons cell (if (or (= cell 2)
+				   (= cell 3))
+			       0
+			       1)))
 	      row))
        (car arg1)))
 

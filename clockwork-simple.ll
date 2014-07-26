@@ -52,10 +52,11 @@
 	  (set *running* 0)
 	  (init-world world)
 	  (cons
-	   (if *running*
-	       *state*
-	       (annotated-set *state*
-			      (cdr (lambda-man-pos))
-			      (car (lambda-man-pos))
-			      (+ 1 (cdr (annotated-get *state* (cdr (lambda-man-pos)) (car (lambda-man-pos)))))))
+	   (annotated-set *state*
+			  (cdr (lambda-man-pos))
+			  (car (lambda-man-pos))
+			  (+ (if (= 0 (cdr (annotated-get *state* (cdr (lambda-man-pos)) (car (lambda-man-pos)))))
+				 2
+				 1) 
+			     (cdr (annotated-get *state* (cdr (lambda-man-pos)) (car (lambda-man-pos))))))
 	   (choose-move (lambda-man-pos))))))
