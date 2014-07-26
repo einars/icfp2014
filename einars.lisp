@@ -24,7 +24,7 @@
 (defun close-ghost? (ghost-pos pos)
   (if (atom ghost-pos) 
     0 
-    (> 2 (manhattan-dist pos ghost-pos))))
+    (> 3 (manhattan-dist pos ghost-pos))))
 
 (defun has-any-ghost? (ghost-poss pos)
    (or-if (close-ghost? (safe-nth ghost-poss 0) pos)
