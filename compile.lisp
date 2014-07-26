@@ -146,6 +146,11 @@
       `(if ,(car clauses) 1 (or ,@(cdr clauses)))
       0))
 
+(define-lm-macro let (var-list &rest body)
+  `(funcall (lambda ,(mapcar #'car var-list)
+	      ,@body)
+	    ,@(mapcar #'cadr var-list)))
+
 (defun get-top-level (program)
   (mapcar #'second program))
 
