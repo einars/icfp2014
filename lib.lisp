@@ -79,3 +79,10 @@
 	((funcall predicate (car lst))
 	 (remove-if predicate (cdr lst)))
 	(t (cons (car lst) (remove-if predicate (cdr lst))))))
+
+(defun abs (val)
+  (if (> val 0) val (- 0 val)))
+
+(defun manhattan (pos1 pos2)
+  (+ (abs (- (car pos1) (car pos2)))
+     (abs (- (cdr pos1) (cdr pos2)))))

@@ -37,8 +37,7 @@
   (third *world*))
 
 (defun bad-ghost (pos ghost)
-  (and (= 0 (first ghost)) ; vitality == standard
-       (pos-eq pos (second ghost))))
+  (pos-eq pos (second ghost)))
 
 (defun matching-ghost (pos)
   (member-if (lambda (ghost) (bad-ghost pos ghost)) (ghost-state)))
