@@ -13,19 +13,29 @@
 (defun < (a b)
   (> b a))
 
+(defun safe-nth (list n)
+  (if (atom list)
+    0
+    (if (= n 0)
+      (car list)
+      (safe-nth (cdr list) (- n 1)))))
+
 
 (defun close-ghost? (ghost-pos pos)
-  (> 3 (manhattan-dist pos ghost-pos)))
+  (if (atom ghost-pos) 
+    0 
+    (> 3 (manhattan-dist pos ghost-pos))))
 
 (defun has-any-ghost? (ghost-poss pos)
-   (or-if (close-ghost? (nth ghost-poss 0) pos)
-     (or-if (close-ghost? (nth ghost-poss 1) pos)
-       (or-if (close-ghost? (nth ghost-poss 2) pos)
-         (close-ghost? (nth ghost-poss 3) pos)))))
+   (or-if (close-ghost? (safe-nth ghost-poss 0) pos)
+     (or-if (close-ghost? (safe-nth ghost-poss 1) pos)
+       (or-if (close-ghost? (safe-nth ghost-poss 2) pos)
+         (close-ghost? (safe-nth ghost-poss 3) pos)))))
 
 (defun moving-closer? (pos1 pos2 target)
-  (< (manhattan-dist pos2 target)
-     (manhattan-dist pos1 target)))
+  (if (null target) 0
+    (< (manhattan-dist pos2 target)
+       (manhattan-dist pos1 target))))
 
 (defun move-score (elem old-pos pos target ghost-poss backwards?)
   (if (has-any-ghost? ghost-poss pos) 0
