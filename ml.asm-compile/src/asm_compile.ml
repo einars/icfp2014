@@ -12,16 +12,15 @@ let label_map_empty = String.Map.empty
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
-  fprintf outx "%s:%d:%d" pos.pos_fname
-    pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
+  fprintf outx "%s line %d" pos.pos_fname pos.pos_lnum
 
 let parse_with_error lexbuf =
   try Asm_parser.prog Asm_lexer.read lexbuf with
   | Asm_lexer.SyntaxError msg ->
-    fprintf stderr "BEBEBE! %s\n" msg;
+    fprintf stderr "%s\n" msg;
     exit (-1)
   | Asm_parser.Error ->
-    fprintf stderr "%a: syntax error\n" print_position lexbuf;
+    fprintf stderr "Syntax error at %a\n" print_position lexbuf;
     exit (-1)
 
 
@@ -69,10 +68,12 @@ let gather_labels codes =
   _rec 0 codes
 
 let print_codes code labels =
-  let get_label label =
-    match Map.find labels label with
+  let rec get_label (label:string) =
+    if (label.[0] = '*') then
+      sprintf "[%s]" (get_label (String.drop_prefix label 1))
+    else (match Map.find labels label with
     | None -> failwith ("Unknown label " ^ label)
-    | Some s -> s
+    | Some s -> s)
 
   in
 

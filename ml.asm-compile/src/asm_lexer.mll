@@ -3,6 +3,7 @@
 {
   open Lexing
   open Asm_parser
+  open Core.Std
 
   exception SyntaxError of string
 
@@ -14,9 +15,10 @@
       }
 }
 
-  let ident = ['a'-'z' 'A'-'Z' '0'-'9' '_']+
+  let ident1 = ['a'-'z' 'A'-'Z' '0'-'9' '_']+
+  let ident2 = '[' ['a'-'z' 'A'-'Z' '0'-'9' '_']+ ']'
   let white = [' ' '\t']+
-  let newline = ['\r' '\n']+
+  let newline = '\r' | '\n' | '\r' '\n'
   let comment = ';' [ ^ '\r' '\n' ]+
   let int = [ '0'-'9' ]+
 
@@ -45,7 +47,8 @@
     | "hlt" { CMD_HLT }
     | "=" { EQ }
 
-    | ident { IDENTIFIER (Lexing.lexeme lexbuf) }
+    | ident1 { IDENTIFIER (Lexing.lexeme lexbuf) }
+    | ident2 { IDENTIFIER ("*" ^ (String.drop_prefix (String.drop_suffix (Lexing.lexeme lexbuf) 1) 1)) }
     | _ { raise (SyntaxError ("This is not asm: " ^ Lexing.lexeme lexbuf)) }
     | eof { EOF }
 
