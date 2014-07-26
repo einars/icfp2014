@@ -48,7 +48,7 @@
       (is-ghost pos)))
 
 (defun can-move (pos dir)
-  (is-obstacle (move pos dir)))
+  (null (is-obstacle (move pos dir))))
 
 (defun init-world (world)
   (set *world* world)
