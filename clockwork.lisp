@@ -1,3 +1,28 @@
+(defvar *closest-pill*)
+
+(defun player-distance (pos)
+  (manhattan (lambda-man-pos) pos))
+
+(defun update-closest-pill (pos new-distance)
+  (set *closest-pill* pos)
+  new-distance)
+
+(defun pill-at (val pos distance)
+  (let ((new-distance (player-distance pos)))
+    (if (and (is-pill val) (> distance new-distance))
+	(update-closest-pill pos new-distance)
+	distance)))
+
+(defun pill-row (row x y distance)
+  (if (null row)
+      distance
+      (pill-row (cdr row) (+ x 1) y (pill-at (car row) (cons x y) distance))))
+
+(defun pill-column (map y distance)
+  (if (null map)
+      distance
+      (pill-column (cdr map) (+ y 1) (pill-row (car map) 0 y distance))))
+
 (defun current-board ()
   (list (lambda-man-pos) (lambda-man-dir) -1 0))
 
@@ -77,4 +102,5 @@
   (init-globals)
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
+	    (pill-column *map* 0 512)
 	    (cons 0 (get-desired-direction)))))

@@ -46,9 +46,11 @@
 (defun matching-ghost (pos)
   (member-if (lambda (ghost) (bad-ghost pos ghost)) (ghost-state)))
 
+(defun is-pill (val)
+  (or (= val +pill+) (= val +power-pill+)))
+
 (defun is-consumable (pos)
-  (or (= (pos-contents pos) +pill+)
-      (= (pos-contents pos) +power-pill+)))
+  (is-pill (pos-contents pos)))
 
 (defun is-obstacle (pos)
   (= (pos-contents pos) +wall+))
