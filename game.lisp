@@ -13,7 +13,7 @@
 (defun lambda-man-pos ()
   (second (lambda-man-state)))
 
-(defun lambda-man-direction ()
+(defun lambda-man-dir ()
   (third (lambda-man-state)))
 
 (defun map-elt (pos map)

@@ -5,8 +5,11 @@
       (car list)
       (nth (cdr list) (- n 1))))
 
+(defun first (list)
+  (car list))
+
 (defun second (list)
-  (nth list 1))
+  (car (cdr list)))
 
 (defun third (list)
   (nth list 2))

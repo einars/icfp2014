@@ -22,5 +22,5 @@
 	  (cons (lambda-man-pos)
 		(advance-state old-pos
 			       (lambda-man-pos)
-			       (lambda-man-direction)
+			       (lambda-man-dir)
 			       0)))))
