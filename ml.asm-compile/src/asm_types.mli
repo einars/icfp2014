@@ -14,6 +14,9 @@ type code = [
     | `Jlt of string * string * string
     | `Jgt of string * string * string
     | `Jeq of string * string * string
+    | `BlockJeq of string * string * code list
+    | `BlockJgt of string * string * code list
+    | `BlockJlt of string * string * code list
 
     | `Int of string
     | `Hlt

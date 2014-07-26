@@ -18,7 +18,7 @@
 %token CMD_INT
 %token CMD_HLT
 
-%token EQ
+%token EQU IF EQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ
 
 %token EOF
 
@@ -30,6 +30,17 @@ prog:
 
 stmt:
     | CMD_MOV ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Mov (dest, src) }
+
+    | IF; x = IDENTIFIER; EQUALS; y = IDENTIFIER; smts = braced_block; { `BlockJeq (x, y, smts) }
+    | IF; x = IDENTIFIER; GT; y = IDENTIFIER; smts = braced_block; { `BlockJgt (x, y, smts) }
+    | IF; x = IDENTIFIER; LT; y = IDENTIFIER; smts = braced_block; { `BlockJlt (x, y, smts) }
+
+    | dest = IDENTIFIER; EQUALS; src = IDENTIFIER; { `Mov (dest, src) }
+
+    | dest = IDENTIFIER; PLUSEQ; src = IDENTIFIER; { `Add (dest, src) }
+    | dest = IDENTIFIER; MINUSEQ; src = IDENTIFIER; { `Sub (dest, src) }
+    | dest = IDENTIFIER; MULTEQ; src = IDENTIFIER; { `Mul (dest, src) }
+    | dest = IDENTIFIER; DIVEQ; src = IDENTIFIER; { `Div (dest, src) }
     | CMD_ADD ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Add (dest, src) }
     | CMD_SUB ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Sub (dest, src) }
     | CMD_MUL ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Mul (dest, src) }
@@ -46,18 +57,19 @@ stmt:
 
     | CMD_INT ; i = IDENTIFIER;                                          { `Int (i) }
     | CMD_HLT ;                                                      { `Hlt }
-    | id = IDENTIFIER; COLON                 { `Label id }
-    | id1 = IDENTIFIER; EQ; id2 = IDENTIFIER { `Defconst (id1, id2) }
 
+    | id = IDENTIFIER; COLON                 { `Label id }
+    | id1 = IDENTIFIER; EQU; id2 = IDENTIFIER { `Defconst (id1, id2) }
+
+
+braced_block:
+  OPEN_BRACE; s = stmts; CLOSE_BRACE; { s }
 
 stmts: ss = rev_stmts { List.rev ss }
 
-opt_comma: 
-  | COMMA {[]}
-
-(* opt_comma:
+opt_comma:
   | { [] }
-  | COMMA { [] }*)
+  | COMMA { [] }
 
 rev_stmts:
   | { [] } (* empty *)

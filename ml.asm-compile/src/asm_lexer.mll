@@ -45,7 +45,21 @@
     | "jeq" { CMD_JEQ }
     | "int" { CMD_INT }
     | "hlt" { CMD_HLT }
-    | "=" { EQ }
+    | "equ" { EQU }
+    | "if" { IF }
+
+    | ">" { GT }
+    | "<" { LT }
+
+    | "+=" { PLUSEQ }
+    | "-=" { MINUSEQ }
+    | "*=" { MULTEQ }
+    | "/=" { DIVEQ }
+
+    | "==" { EQUALS }
+    | "=" { EQUALS }
+    | "{" { OPEN_BRACE }
+    | "}" { CLOSE_BRACE }
 
     | ident1 { IDENTIFIER (Lexing.lexeme lexbuf) }
     | ident2 { IDENTIFIER ("*" ^ (String.drop_prefix (String.drop_suffix (Lexing.lexeme lexbuf) 1) 1)) }
