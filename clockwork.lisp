@@ -7,11 +7,18 @@
   (set *closest-pill* pos)
   new-distance)
 
+(defun is-fruit (val)
+  (= val 4))
+
 (defun pill-at (val pos distance)
   (let ((new-distance (player-distance pos)))
-    (if (and (is-pill val) (> distance new-distance))
-	(update-closest-pill pos new-distance)
-	distance)))
+    (if (> (cdr (cdr (cdr *world*))) 0)
+	(if (is-fruit val)
+	    (update-closest-pill pos new-distance)
+	    nil)
+	(if (and (is-pill val) (> distance new-distance))
+	    (update-closest-pill pos new-distance)
+	    distance))))
 
 (defun pill-row (row x y distance)
   (if (null row)
