@@ -20,7 +20,8 @@
     (car . car)
     (cdr . cdr)
     (atom . atom)
-    (cons . cons)))
+    (cons . cons)
+    (break . brk)))
 
 (defun is-builtin (exp)
   (and (consp exp) (assoc (first exp) *builtin-ops*)))

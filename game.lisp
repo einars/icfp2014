@@ -72,3 +72,29 @@
 			(cons  0  1)
 			(cons -1  0))))
 
+(defun create-annotated-map ()
+  (map (lambda (row)
+	 (map (lambda (cell)
+		(cons cell 0))
+	      row))
+       (car arg1)))
+
+(defun annotated-col-get (row col)
+  (if (> col 0)
+      (annotated-col-get (cdr row) (- col 1))
+      (car row)))
+
+(defun annotated-get (map row col)
+  (if (> row 0)
+      (annotated-get (cdr map) (- row 1) col)
+      (annotated-col-get (car map) col)))
+
+(defun annotated-row-set (row col val)
+  (if (not (= col 0))
+      (cons (car row) (annotated-row-set (cdr row) (- col 1) val))
+      (cons (cons (car (car row)) val) (cdr row))))
+
+(defun annotated-set (map row col val)
+  (if (not (= row 0))
+      (cons (car map) (annotated-set (cdr map) (- row 1) col val))
+      (cons (annotated-row-set (car map) col val) (cdr map))))
