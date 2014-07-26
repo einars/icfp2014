@@ -21,29 +21,37 @@
       (safe-nth (cdr list) (- n 1)))))
 
 
-(defun close-ghost? (ghost-pos pos)
+(defun ghost-proximity (ghost-pos pos)
+  ; 0 .. 3
   (if (atom ghost-pos) 
     0 
-    (> 3 (manhattan-dist pos ghost-pos))))
+    (let ((dist (manhattan-dist pos ghost-pos)))
+      (if (< dist 3) (- 0 dist) 0))))
 
-(defun has-any-ghost? (ghost-poss pos)
-   (or-if (close-ghost? (safe-nth ghost-poss 0) pos)
-     (or-if (close-ghost? (safe-nth ghost-poss 1) pos)
-       (or-if (close-ghost? (safe-nth ghost-poss 2) pos)
-         (close-ghost? (safe-nth ghost-poss 3) pos)))))
+(defun ghost-proximity-score (ghost-poss pos)
+   (or-if (ghost-proximity (safe-nth ghost-poss 0) pos)
+     (or-if (ghost-proximity (safe-nth ghost-poss 1) pos)
+       (or-if (ghost-proximity (safe-nth ghost-poss 2) pos)
+         (ghost-proximity (safe-nth ghost-poss 3) pos)))))
 
 (defun moving-closer? (pos1 pos2 target)
   (if (null target) 0
     (< (manhattan-dist pos2 target)
        (manhattan-dist pos1 target))))
 
+(defvar *nudge*)
+(defun nudge()
+  (set *nudge* (mod (+ 7 *nudge*) 100))
+  *nudge*)
+
+(defun mod (val n)
+  (if (>= val n) (mod4 (- val n)) val))
+
 (defun move-score (elem old-pos pos target ghost-poss backwards?)
-  (if (has-any-ghost? ghost-poss pos) 0
-    (if (= 0 elem) 0 (+ (+ (+ 
-                             (if (= 2 elem) 0 0)
-                             (if (= 3 elem) 20 0))
-                             (if (moving-closer? old-pos pos target) 10 0))
-                             (if backwards? -10 1)))))
+  (or-if (ghost-proximity-score ghost-poss pos)
+    (if (= 0 elem) -9999999
+      (+ (if (moving-closer? old-pos pos target) 150 0)
+         (if backwards? (- 0 (nudge)) (nudge))))))
 
 (defun choose-move (s0 s1 s2 s3)
   ; (print (cons s0 (cons s1 (cons s2 s3))))

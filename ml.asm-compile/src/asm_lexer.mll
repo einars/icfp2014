@@ -1,0 +1,51 @@
+(* I am a lexer *)
+
+{
+  open Lexing
+  open Asm_parser
+
+  exception SyntaxError of string
+
+  let next_line lexbuf =
+    let pos = lexbuf.lex_curr_p in 
+    lexbuf.lex_curr_p <-
+      { pos with pos_bol = lexbuf.lex_curr_pos;
+                 pos_lnum = pos.pos_lnum + 1
+      }
+}
+
+  let ident = ['a'-'z' 'A'-'Z' '0'-'9' '_']+
+  let white = [' ' '\t']+
+  let newline = ['\r' '\n']+
+  let comment = ';' [ ^ '\r' '\n' ]+
+  let int = [ '0'-'9' ]+
+
+  rule read =
+    parse
+    | white { read lexbuf }
+    | newline { next_line lexbuf; read lexbuf }
+    | "," { COMMA }
+    | comment { read lexbuf }
+    (* | ";" { SEMICOLON } *)
+    | ":" { COLON }
+    | "mov" { CMD_MOV }
+    | "inc" { CMD_INC }
+    | "dec" { CMD_DEC }
+    | "add" { CMD_ADD }
+    | "sub" { CMD_SUB }
+    | "mul" { CMD_MUL }
+    | "div" { CMD_DIV }
+    | "and" { CMD_AND }
+    | "or"  { CMD_OR }
+    | "xor" { CMD_XOR }
+    | "jlt" { CMD_JLT }
+    | "jgt" { CMD_JGT }
+    | "jeq" { CMD_JEQ }
+    | "int" { CMD_INT }
+    | "hlt" { CMD_HLT }
+    | "=" { EQ }
+
+    | ident { IDENTIFIER (Lexing.lexeme lexbuf) }
+    | _ { raise (SyntaxError ("This is not asm: " ^ Lexing.lexeme lexbuf)) }
+    | eof { EOF }
+
