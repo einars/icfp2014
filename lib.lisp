@@ -1,3 +1,5 @@
+(defvar nil)
+
 (defun nth (list n)
   (if (= n 0)
       (car list)
@@ -25,7 +27,7 @@
 
 (defun length (lst)
   (if (null lst)
-      0
+      nil
       (+ 1 (length (cdr lst)))))
 
 (defun append (list1 list2)
@@ -35,5 +37,5 @@
 
 (defun map (fn lst)
   (if (null lst)
-      0
+      nil
       (cons (funcall fn (car lst)) (map fn (cdr lst)))))
