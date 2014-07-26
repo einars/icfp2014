@@ -56,21 +56,29 @@ let add_to_map map k v =
 
 let gather_labels codes =
   let map = ref (stock_labels ()) in
+  let jmap = ref label_map_empty in
 
   let rec _rec pc = function
-    | [] -> !map
+    | [] -> pc
 
     | `Defconst (a,b) :: rest ->
         map := add_to_map !map a b;
+        jmap := add_to_map !jmap a b;
         _rec pc rest;
 
     | `Label l :: rest ->
         map := add_to_map !map l (string_of_int pc);
+        jmap := add_to_map !jmap l (string_of_int pc);
         _rec pc rest;
+
+    | `BlockJeq (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
+    | `BlockJgt (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
+    | `BlockJlt (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
 
     | h::rest -> _rec (succ pc) rest
   in
-  _rec 0 codes
+  ignore(_rec 0 codes);
+  !map, !jmap
 
 let calc_code_size c =
   let rec _rec pc = function
@@ -92,21 +100,27 @@ let calc_code_size c =
     | `Hlt :: rest -> _rec (pc + 1) rest
     | `Label _ :: rest -> _rec pc rest
     | `Defconst _ :: rest -> _rec pc rest
-    | `BlockJeq (a, b, codes) :: rest -> _rec (1 + _rec 0 codes) rest
-    | `BlockJgt (a, b, codes) :: rest -> _rec (1 + _rec 0 codes) rest
-    | `BlockJlt (a, b, codes) :: rest -> _rec (1 + _rec 0 codes) rest
+    | `BlockJeq (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
+    | `BlockJgt (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
+    | `BlockJlt (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
 
   in
   _rec 0 c
 ;;
 
 let print_codes code labels =
+  let maybe_convert_to_ref s =
+    if (s.[0] = '*') then
+      sprintf "[%s]" (String.drop_prefix s 1)
+    else s
+  in
+
   let rec get_label (label:string) =
     if (label.[0] = '*') then
       sprintf "[%s]" (get_label (String.drop_prefix label 1))
     else (match Map.find labels label with
     | None -> failwith ("Unknown label " ^ label)
-    | Some s -> s)
+    | Some s -> maybe_convert_to_ref s)
 
   in
 
@@ -125,9 +139,9 @@ let print_codes code labels =
     | `Inc (a)    -> printf "INC %s\n" (get_label a); pc := !pc + 1
     | `Dec (a)    -> printf "DEC %s\n" (get_label a); pc := !pc + 1
 
-    | `Jlt (a, b, c) -> printf "JLT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
-    | `Jgt (a, b, c) -> printf "JGT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
-    | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
+    | `Jlt (a, b, c) -> printf "JLT %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
+    | `Jgt (a, b, c) -> printf "JGT %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
+    | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s; %d\n" (get_label a) (get_label b) (get_label c) !pc; pc := !pc + 1
 
     | `BlockJeq (a, b, codes) ->
         let code_size = calc_code_size codes in
@@ -162,8 +176,10 @@ let print_codes code labels =
 
 let rec parse_and_print lexbuf =
   let parsed = parse_with_error lexbuf in
-  let labels = gather_labels parsed in
-  print_codes parsed labels
+  let all_labels, new_labels = gather_labels parsed in
+  print_codes parsed all_labels;
+  Map.iter new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v);
+;;
 
 
 let loop filename () =
