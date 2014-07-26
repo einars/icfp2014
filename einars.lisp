@@ -1,35 +1,18 @@
 ; bēg no spociņiem
 
-
-(defun nth (list n)
-  (if (= n 0)
-      (car list)
-      (nth (cdr list) (- n 1))))
-
-(defun second (list)
-  (nth list 1))
-
-(defun third (list)
-  (nth list 2))
-
-(defun map-elt (pos)
-  (nth (nth *map* (cdr pos)) (car pos)))
-
-(defun next-pos (pos dir)
-  (if (= dir 0)
-      (cons (car pos) (- (cdr pos) 1))
-      (if (= dir 1)
-	  (cons (+ 1 (car pos)) (cdr pos))
-	  (if (= dir 2)
-	      (cons (car pos) (+ (cdr pos) 1))
-	      (cons (- (car pos) 1) (cdr pos))))))
-
 (defun abs (n)
   (if (> n 0) n (- 0 n)))
 
 (defun manhattan-dist (p1 p2)
   (+ (abs (- (car p1) (car p2)))
   (abs (- (cdr p1) (cdr p2)))))
+
+(defun >= (a b)
+  (if (> a b) 1 (= a b)))
+
+(defun < (a b)
+  (> b a))
+
 
 (defun close-ghost? (ghost-pos pos)
   (> 3 (manhattan-dist pos ghost-pos)))
@@ -46,11 +29,11 @@
 
 (defun move-score (elem old-pos pos target ghost-poss backwards?)
   (if (has-any-ghost? ghost-poss pos) 0
-    (if (= 0 elem) 0 (+ (+ (+ (if (= 2 elem) 0 0)
-                       (if (= 3 elem) 20 0))
-                       (if (moving-closer? old-pos pos target) 10 0))
-                        (if backwards? -10 1)
-                        ))))
+    (if (= 0 elem) 0 (+ (+ (+ 
+                             (if (= 2 elem) 0 0)
+                             (if (= 3 elem) 20 0))
+                             (if (moving-closer? old-pos pos target) 10 0))
+                             (if backwards? -10 1)))))
 
 (defun choose-move (s0 s1 s2 s3)
   ; (print (cons s0 (cons s1 (cons s2 s3))))
@@ -109,12 +92,6 @@
 
 (defun advance-state (pos)
   (advance-state-2 pos (collect-map pred-collector-dots) (ghost-positions) (lambda-man-dir)))
-
-(defun >= (a b)
-  (if (> a b) 1 (= a b)))
-
-(defun < (a b)
-  (> b a))
 
 (defun same-pos? (p1 p2)
   (and (= (car p1) (car p2))
