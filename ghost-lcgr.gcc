@@ -1,0 +1,78 @@
+multiplier equ 177
+increment equ 179
+seed equ 170
+seed_addr equ 1
+
+; init
+;mov [seed_addr], seed
+
+; main loop
+invalid_ret :
+jeq LCGR, 0, 0
+LCGR_ret :
+mov h, [seed_addr]
+int 8
+jeq choose_dir, 0, 0
+choose_dir_ret :
+mov a, g
+int 0
+jeq check_valid, 0, 0
+valid_ret :
+hlt
+
+check_valid :
+jeq move, 0, 0
+move_ret :
+int 7
+jgt valid_ret, a, 0
+jeq invalid_ret, 0, 0
+
+move :
+mov a, 0
+int 5
+jeq move_up, g, 0
+jeq move_right, g, 1
+jeq move_down, g, 2
+jeq move_left, g, 3
+  move_up :
+  sub b, 1 
+  jeq move_ret, 0, 0
+
+  move_right :
+  add a, 1 
+  jeq move_ret, 0, 0
+
+  move_down :
+  add b, 1 
+  jeq move_ret, 0, 0
+
+  move_left :
+  sub a, 1 
+  jeq move_ret, 0, 0
+
+choose_dir :
+jgt return0, h, 192
+jgt return1, h, 128
+jgt return2, h, 64
+jeq return3, 1, 1
+
+return0 :
+mov g, 0
+jeq choose_dir_ret, 0, 0
+
+return1 :
+mov g, 1
+jeq choose_dir_ret, 0, 0
+
+return2 :
+mov g, 2
+jeq choose_dir_ret, 0, 0
+
+return3 :
+mov g, 3
+jeq choose_dir_ret, 0, 0
+
+LCGR :
+mul [seed_addr],multiplier
+add [seed_addr],increment
+jeq LCGR_ret, 0, 0
