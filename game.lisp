@@ -37,7 +37,8 @@
   (third *world*))
 
 (defun bad-ghost (pos ghost)
-  (pos-eq pos (second ghost)))
+  (and (= 0 (first ghost))
+       (> 2 (manhattan pos (second ghost)))))
 
 (defun matching-ghost (pos)
   (member-if (lambda (ghost) (bad-ghost pos ghost)) (ghost-state)))
@@ -47,8 +48,10 @@
       (= (pos-contents pos) +power-pill+)))
 
 (defun is-obstacle (pos)
-  (or (= (pos-contents pos) +wall+)
-      (not (null (matching-ghost pos)))))
+  (= (pos-contents pos) +wall+))
+
+(defun is-ghost (pos)
+  (not (null (matching-ghost pos))))
 
 (defun can-move (pos dir)
   (null (is-obstacle (move pos dir))))

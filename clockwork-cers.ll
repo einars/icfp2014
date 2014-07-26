@@ -29,13 +29,16 @@
 	0)))
 
 (defun find-closest-point-direction-rec (pos-list)
-  (set pos-list (mappend moves-at-point pos-list))
-  (if (and (not (null pos-list))
-	   (null (mappend check-point-pos pos-list)))
-      (find-closest-point-direction-rec pos-list)
-      (if (null pos-list)
-	  +dir-N+
-	  (car (mappend check-point-pos pos-list)))))
+  (let ((new-list (mappend moves-at-point pos-list)))
+    (if (> (third (car pos-list)) 3)
+	(set new-list (remove-if (lambda (x) (is-ghost (first x))) new-list))
+	0)
+    (if (and (not (null new-list))
+	     (null (mappend check-point-pos new-list)))
+	(find-closest-point-direction-rec new-list)
+	(if (null new-list)
+	    +dir-N+
+	    (car (mappend check-point-pos new-list))))))
 
 (defun find-closest-point-direction (pos)
   (find-closest-point-direction-rec (list (list pos pos 99 99))))
