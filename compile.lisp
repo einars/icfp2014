@@ -141,6 +141,11 @@
       `(if ,(car clauses) (and ,@(cdr clauses)) 0)
       1))
 
+(define-lm-macro or (&rest clauses)
+  (if clauses
+      `(if ,(car clauses) 1 (or ,@(cdr clauses)))
+      0))
+
 (defun get-top-level (program)
   (mapcar #'second program))
 

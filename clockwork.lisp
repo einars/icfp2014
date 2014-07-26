@@ -39,29 +39,56 @@
       (mod4 (+ state 1))
       state))
 
-(defun look-at-direction (old-pos pos state map i)
-  (if (= 2 (map-elt (next-pos pos i) map))
-      i
-      (advance-state old-pos pos state map (+ i 1))))
+(defvar *map*)
 
-(defun advance-state (old-pos pos state map i)
+(defun look-at-direction (old-pos pos state i)
+  (if (= 2 (map-elt (next-pos pos i) *map*))
+      i
+      (advance-state old-pos pos state (+ i 1))))
+
+(defun advance-state (old-pos pos state i)
   (if (= i 4)
       (guess-direction old-pos pos state)
-      (look-at-direction old-pos pos state map i)))
+      (look-at-direction old-pos pos state i)))
 
-(defun init-dirlist ()
+(defun init-globals ()
   (set dir-list (list (cons  0 -1)
 		      (cons  1  0)
 		      (cons  0  1)
-		      (cons -1  0))))
+		      (cons -1  0)))
+  (set dir-N 0)
+  (set dir-E 1)
+  (set dir-S 2)
+  (set dir-W 3))
+
+(defun opposite (direction)
+  (mod4 (+ direction 2)))
+
+(defvar dir-N)
+(defvar dir-S)
+(defvar dir-E)
+(defvar dir-W)
+
+(defun move (pos dir)
+  (add-pos pos (nth dir-list dir)))
+
+(defun pos-contents (pos)
+  (map-elt pos *map*))
+
+(defun check-wall (pos)
+  (= (pos-contents pos) 0))
+
+(defun pos-eq (pos1 pos2)
+  (and (= (car pos1) (car pos2))
+       (= (cdr pos1) (cdr pos2))))
 
 (defun main ()
-  (init-dirlist)
+  (init-globals)
   (cons (cons 0 0)
 	(lambda (old-pos world)
+	  (set *map* (car world))
 	  (cons (lambda-man-pos world)
 		(advance-state old-pos
 			       (lambda-man-pos world)
 			       (lambda-man-direction world)
-			       (car world)
 			       0)))))
