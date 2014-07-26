@@ -81,6 +81,10 @@
 (defun compile-define (exp env)
   (compile-lambda (rest exp) env (second exp)))
 
+(defun compile-defasm (exp)
+  (push (cons (second exp) (third exp)) *linker-symbols*)
+  `(ldf ,(second exp)))
+
 (defun is-macro (exp)
   (assoc (first exp) *macro-symbols*))
 
@@ -111,6 +115,7 @@
 	((is-special exp 'print) (compile-print exp env))
 	((is-special exp 'progn) (compile-progn exp env))
 	((is-special exp 'defun) (compile-define exp env))
+	((is-special exp 'defasm) (compile-defasm exp))
 	((is-special exp 'lambda) (compile-lambda exp env))
 	((is-special exp 'funcall) (compile-funcall exp env))
 	((is-special exp 'defvar) nil)
@@ -165,7 +170,7 @@
     (read-program-defines stream)))
 
 (defun init-globals (top-level-name)
-  (if (eq 'defun (first top-level-name))
+  (if (member (first top-level-name) '(defun defasm))
       `(ldf ,(second top-level-name))
       `(ldc ,(or (third top-level-name) 0))))
 
