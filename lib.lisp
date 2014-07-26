@@ -16,10 +16,10 @@
   (nth list 2))
 
 (defun not (a)
-  (if a 0 t))
+  (if (null a) t 0))
 
 (defun or-if (a b)
-  (if a a b))
+  (if (null a) b a))
 
 (defun add-pos (pos1 pos2)
   (cons (+ (car pos1) (car pos2))
