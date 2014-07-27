@@ -30,9 +30,16 @@
 (defvar *new-states*)
 (defvar *old-states*)
 
+(defun ghost-next-pos (ghost)
+  (move (second ghost) (cdr (cdr ghost))))
+
+(defun is-ghost-pos (pos ghost)
+  (or (pos-eq pos (second ghost))
+      (pos-eq pos (ghost-next-pos ghost))))
+
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
-       (pos-eq pos (second ghost))
+       (is-ghost-pos pos ghost)
        (>= 2 (manhattan (lambda-man-pos) (second ghost)))))
 
 (defun is-ghost-near (pos)
