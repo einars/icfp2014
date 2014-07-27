@@ -7,13 +7,18 @@
   (set *closest-pill* pos)
   new-distance)
 
+(defun ghost-on-pos (pos)
+  (not (null (member-if (lambda (x) (pos-eq pos (second x))) (ghost-state)))))
+
 (defun pill-at (val pos distance)
   (let ((new-distance (player-distance pos)))
     (if (fruit-on-board)
 	(if (is-fruit val)
 	    (update-closest-pill pos new-distance)
 	    nil)
-	(if (and (is-pill val) (> distance new-distance))
+	(if (and (is-pill val)
+		 (> distance new-distance)
+		 (not (ghost-on-pos pos)))
 	    (update-closest-pill pos new-distance)
 	    distance))))
 
@@ -149,7 +154,8 @@
 (defun search-for-new-pill ()
   (if (or (fruit-on-board)
 	  (null *closest-pill*)
-	  (lambda-man-on-pill))
+	  (lambda-man-on-pill)
+	  (ghost-on-pos *closest-pill*))
       (pill-column *map* 0 512)
       nil))
 
