@@ -189,13 +189,16 @@
 	    (find-closest-pill pos (cdr pills) best score)
 	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
 
+(defun closest-power-pill ()
+  (find-closest-pill *lambda-man-pos* *power-pills* nil 512))
+
 (defun closest-pill ()
   (or-if (find-point-near *lambda-man-pos*)
 	 (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512)
 		(car *all-pills*))))
 
 (defun going-for-power-pill ()
-  (pos-eq *closest-pill* (car *power-pills*)))
+  (not (null (member-if (lambda (x) (pos-eq x *closest-pill*)) *power-pills*))))
 
 (defun search-for-new-pill ()
   (clean-pill-list *lambda-man-pos*)
@@ -209,7 +212,7 @@
 	     (and (>= 3 *closest-ghost*)
 		  (= *vitality* 0)
 		  (consp *power-pills*)))
-	 (set *closest-pill* (car *power-pills*)))
+	 (set *closest-pill* (closest-power-pill)))
 	((or (null *closest-pill*)
 	     (lambda-man-on *closest-pill*)
 	     (ghost-on-pos *closest-pill*)
