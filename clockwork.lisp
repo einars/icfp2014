@@ -257,17 +257,20 @@
 		 (found-closest-ghost ghosts ghost-distance)
 		 (find-closest-ghost (cdr ghosts) distance))))))
 
-(defun possible-moves (pos)
-  (remove-if (lambda (dir) (is-obstacle (move pos dir))) *all-dirs*))
+(defun possible-moves (pos origin)
+  (remove-if (lambda (dir)
+	       (or (= dir origin)
+		   (is-obstacle (move pos dir)))) *all-dirs*))
 
-(defun is-junction (pos)
-  (> (length (possible-moves pos)) 2))
+(defun mappend-tunnels (pos dir steps)
+  (mappend (lambda (new-dir)
+	     (advance-tunnel (move pos new-dir) new-dir (+ steps 1)))
+	   (possible-moves pos dir)))
 
 (defun advance-tunnel (pos dir steps)
-  (cond ((is-obstacle pos) nil)
-	((is-junction pos) (list (list steps dir pos)))
-	(t (cons (list steps dir pos)
-		 (advance-tunnel (move pos dir) dir (+ steps 1))))))
+  (if (= steps 5)
+      nil
+      (cons (list steps dir pos) (mappend-tunnels pos dir steps))))
 
 (defun build-one-tunnel (ghost)
   (advance-tunnel (second ghost) (cdr (cdr ghost)) 0))
