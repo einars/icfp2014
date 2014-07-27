@@ -2,6 +2,7 @@
 (defvar *fruit-pos*)
 (defvar *all-pills*)
 (defvar *closest-pill*)
+(defvar *closest-ghost*)
 
 (defun player-distance (pos)
   (manhattan *lambda-man-pos* pos))
@@ -115,11 +116,15 @@
 (defun hit (state)
   (pos-eq *closest-pill* (state-pos state)))
 
+(defun compare-states (state1 state2)
+  (> (state-distance state2) (state-distance state1)))
+;  (or (> (state-pills state2) (state-pills state1))
+;      (and (= (state-pills state2) (state-pills state1))
+;	   (> (state-distance state2) (state-distance state1)))))
+
 (defun insert (state list)
   (cond ((null list) (list state))
-	((> (state-distance (car list))
-	    (state-distance state))
-	 (cons state list))
+	((compare-states state (car list)) (cons state list))
 	(t (cons (car list) (insert state (cdr list))))))
 
 (defun push-state (state)
@@ -183,9 +188,20 @@
 	 (set *closest-pill* (closest-pill)))
 	(t nil)))
 
+(defun get-ghost-distance (ghost)
+  (manhattan *lambda-man-pos* (second ghost)))
+
+(defun find-closest-ghost (ghosts distance)
+  (cond ((null ghosts) distance)
+	(t (let ((ghost-distance (get-ghost-distance (car ghosts))))
+	     (if (> distance ghost-distance)
+		 (find-closest-ghost (cdr ghosts) ghost-distance)
+		 (find-closest-ghost (cdr ghosts) distance))))))
+
 (defun a-star ()
   (search-for-new-pill)
   (set *lives* (lambda-man-lives))
+  (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
   (set *old-states* (make-list (length *map*)))
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
