@@ -49,9 +49,12 @@
   (or (pos-eq pos (second ghost))
       (pos-eq pos (ghost-next-pos ghost))))
 
+(defun is-safe-vitality ()
+  (> 500 *vitality*))
+
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
-       (> 200 *vitality*)
+       (is-safe-vitality)
        (is-ghost-pos pos ghost)
        (>= 3 (manhattan *lambda-man-pos* (second ghost)))))
 
@@ -61,7 +64,7 @@
 (defun power-pill-sacred (value)
   (and (is-power-pill value)
        (or (> *closest-ghost* 5)
-	   (> *vitality* 200))))
+	   (not (is-safe-vitality)))))
 
 (defun can-move (pos dir)
   (let ((new-pos (move pos dir)))
@@ -206,7 +209,7 @@
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
 	((and (>= 4 *closest-ghost*)
-	      (> *vitality* 200))
+	      (not (is-safe-vitality)))
 	 (set *closest-pill* *closest-ghost-pos*))
 	((or (null *all-pills*)
 	     (and (>= 3 *closest-ghost*)
