@@ -15,7 +15,7 @@
       }
 }
 
-  let ident1 = ['a'-'z' 'A'-'Z' '0'-'9' '_']+
+  let ident1 = '-'? ['a'-'z' 'A'-'Z' '0'-'9' '_']+
   let ident2 = '[' ['a'-'z' 'A'-'Z' '0'-'9' '_']+ ']'
   let white = [' ' '\t']+
   let newline = '\r' | '\n' | '\r' '\n'
@@ -66,6 +66,10 @@
     | "<>" { NEQUALS }
     | "{" { OPEN_BRACE }
     | "}" { CLOSE_BRACE }
+    | "*" { TIMES }
+    | "/" { DIV }
+    | "+" { PLUS }
+    | "-" { MINUS }
 
     | ident1 { IDENTIFIER (Lexing.lexeme lexbuf) }
     | ident2 { IDENTIFIER ("*" ^ (String.drop_prefix (String.drop_suffix (Lexing.lexeme lexbuf) 1) 1)) }

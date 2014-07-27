@@ -11,6 +11,11 @@ type code = [
     | `Inc of string
     | `Dec of string
 
+    | `DiPlus of string * string * string
+    | `DiMinus of string * string * string
+    | `DiTimes of string * string * string
+    | `DiDiv of string * string * string
+
     | `Jlt of string * string * string
     | `Jgt of string * string * string
     | `Jeq of string * string * string

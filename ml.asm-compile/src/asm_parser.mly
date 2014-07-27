@@ -17,7 +17,7 @@
 %token CMD_JEQ
 %token CMD_INT
 %token CMD_HLT
-%token CMD_JMP CMD_CALL CMD_RET
+%token CMD_JMP CMD_CALL CMD_RET PLUS MINUS TIMES DIV
 
 %token EQU IF EQUALS NEQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ WHILE
 
@@ -49,6 +49,10 @@ stmt:
     | dest = IDENTIFIER; MINUSEQ; src = IDENTIFIER; { `Sub (dest, src) }
     | dest = IDENTIFIER; MULTEQ; src = IDENTIFIER; { `Mul (dest, src) }
     | dest = IDENTIFIER; DIVEQ; src = IDENTIFIER; { `Div (dest, src) }
+    | dest = IDENTIFIER; EQUALS; p1 = IDENTIFIER; PLUS; p2 = IDENTIFIER; { `DiPlus (dest, p1, p2) }
+    | dest = IDENTIFIER; EQUALS; p1 = IDENTIFIER; MINUS; p2 = IDENTIFIER; { `DiMinus (dest, p1, p2) }
+    | dest = IDENTIFIER; EQUALS; p1 = IDENTIFIER; TIMES; p2 = IDENTIFIER; { `DiTimes (dest, p1, p2) }
+    | dest = IDENTIFIER; EQUALS; p1 = IDENTIFIER; DIV; p2 = IDENTIFIER; { `DiDiv (dest, p1, p2) }
     | CMD_ADD ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Add (dest, src) }
     | CMD_SUB ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Sub (dest, src) }
     | CMD_MUL ; dest = IDENTIFIER; opt_comma; src = IDENTIFIER; { `Mul (dest, src) }

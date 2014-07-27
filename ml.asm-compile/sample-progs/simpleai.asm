@@ -1,16 +1,8 @@
 ; load ghost x,y @ 0,1
 counter equ [0]
 
-counter = 0
+a = b + c
+a = b * c
+a = b - c
+a = b / c
 
-while counter < 5 {
-    call inc_counter
-}
-
-a = counter
-int 8
-hlt
-
-inc_counter:
-    counter += 1
-    ret

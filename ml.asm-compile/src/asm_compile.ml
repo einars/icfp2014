@@ -27,8 +27,10 @@ let parse_with_error lexbuf =
 let stock_labels ()=
   let map = ref label_map_empty in
   for i = 0 to 255 do
-    map := Map.add !map ~key:(string_of_int i) ~data:(string_of_int i)
+    map := Map.add !map ~key:(string_of_int i) ~data:(string_of_int i);
+    map := Map.add !map ~key:(string_of_int (-i)) ~data:(string_of_int (256 -i));
   done;
+  map := Map.add !map ~key:"0" ~data:"0";
   map := Map.add !map ~key:"A" ~data:"A";
   map := Map.add !map ~key:"a" ~data:"A";
   map := Map.add !map ~key:"B" ~data:"B";
@@ -192,6 +194,19 @@ let print_codes code =
     | `Xor (a, b) -> printf "XOR %s, %s\n" (get_label a) (get_label b); pc := !pc + 1
     | `Inc (a)    -> printf "INC %s\n" (get_label a); pc := !pc + 1
     | `Dec (a)    -> printf "DEC %s\n" (get_label a); pc := !pc + 1
+
+    | `DiPlus (a, b, c)    ->
+        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
+        printf "ADD %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
+    | `DiMinus (a, b, c)    ->
+        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
+        printf "SUB %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
+    | `DiTimes (a, b, c)    ->
+        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
+        printf "MUL %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
+    | `DiDiv (a, b, c)    ->
+        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
+        printf "DIV %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
 
     | `Jlt (a, b, c) -> printf "JLT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jgt (a, b, c) -> printf "JGT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
