@@ -107,6 +107,7 @@
 	(get-a-star-direction))))
 
 (defun a-star ()
+  (pill-column *map* 0 512)
   (set *old-states* nil)
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
@@ -115,5 +116,4 @@
   (init-globals)
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
-	    (pill-column *map* 0 512)
 	    (cons 0 (a-star)))))
