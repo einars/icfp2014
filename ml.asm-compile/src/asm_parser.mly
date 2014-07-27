@@ -19,7 +19,7 @@
 %token CMD_HLT
 %token CMD_JMP CMD_CALL CMD_RET
 
-%token EQU IF EQUALS NEQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ
+%token EQU IF EQUALS NEQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ WHILE
 
 %token EOF
 
@@ -36,6 +36,12 @@ stmt:
     | IF; x = IDENTIFIER; EQUALS; y = IDENTIFIER; smts = braced_block; { `BlockJeq (x, y, smts) }
     | IF; x = IDENTIFIER; GT; y = IDENTIFIER; smts = braced_block; { `BlockJgt (x, y, smts) }
     | IF; x = IDENTIFIER; LT; y = IDENTIFIER; smts = braced_block; { `BlockJlt (x, y, smts) }
+
+    | WHILE; x = IDENTIFIER; NEQUALS; y = IDENTIFIER; smts = braced_block; { `WhileNeq (x, y, smts) }
+    | WHILE; x = IDENTIFIER; EQUALS; y = IDENTIFIER; smts = braced_block; { `WhileEq (x, y, smts) }
+    | WHILE; x = IDENTIFIER; GT; y = IDENTIFIER; smts = braced_block; { `WhileGt (x, y, smts) }
+    | WHILE; x = IDENTIFIER; LT; y = IDENTIFIER; smts = braced_block; { `WhileLt (x, y, smts) }
+
 
     | dest = IDENTIFIER; EQUALS; src = IDENTIFIER; { `Mov (dest, src) }
 

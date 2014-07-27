@@ -50,6 +50,7 @@
     | "equ" { EQU }
     | "if" { IF }
     | "jmp" { CMD_JMP }
+    | "while" { WHILE }
 
     | ">" { GT }
     | "<" { LT }

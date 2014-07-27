@@ -18,6 +18,11 @@ type code = [
     | `BlockJneq of string * string * code list
     | `BlockJgt of string * string * code list
     | `BlockJlt of string * string * code list
+    | `WhileEq of string * string * code list
+    | `WhileNeq of string * string * code list
+    | `WhileGt of string * string * code list
+    | `WhileLt of string * string * code list
+
 
     | `Call of string
     | `Ret
