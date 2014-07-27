@@ -112,8 +112,45 @@
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
 
+(defun ghost-distance (ghost)
+  (manhattan (lambda-man-pos) (second ghost)))
+
+(defun is-threat (ghost)
+  (and (= 0 (first ghost)) (>= 3 (ghost-distance ghost))))
+
+(defun threats (ghosts)
+  (cond ((null ghosts) nil)
+	((is-threat (car ghosts))
+	 (cons (car ghosts) (threats (cdr ghosts))))
+	(t (threats (cdr ghosts)))))
+
+(defun total-distance (ghosts pos)
+  (if (null ghosts)
+      0
+      (+ (manhattan pos (second (car ghosts)))
+	 (total-distance (cdr ghosts) pos))))
+
+(defun total-distance-from (ghosts dir)
+  (total-distance ghosts (move (lambda-man-pos) dir)))
+
+(defun furthest-from (ghosts best-dir distance dirs)
+  (cond ((null dirs) best-dir)
+	(t (let ((new-distance (total-distance-from ghosts (car dirs))))
+	     (if (> new-distance distance)
+		 (furthest-from ghosts (car dirs) new-distance (cdr dirs))
+		 (furthest-from ghosts best-dir distance (cdr dirs)))))))
+
+(defun evade (ghosts)
+  (furthest-from ghosts +dir-N+ 0 (possible-dirs (lambda-man-pos))))
+
+(defun evasive-a-star ()
+  (let ((ghosts (threats (ghost-state))))
+    (if (consp ghosts)
+	(evade ghosts)
+	(a-star))))
+
 (defun main ()
   (init-globals)
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
-	    (cons 0 (a-star)))))
+	    (cons 0 (evasive-a-star)))))
