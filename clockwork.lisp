@@ -1,3 +1,5 @@
+(defvar *fruit-pos*)
+(defvar *all-pills*)
 (defvar *closest-pill*)
 
 (defun player-distance (pos)
@@ -10,27 +12,24 @@
 (defun ghost-on-pos (pos)
   (not (null (member-if (lambda (x) (is-ghost-pos pos x)) (ghost-state)))))
 
-(defun pill-at (val pos distance)
-  (let ((new-distance (player-distance pos)))
-    (if (fruit-on-board)
-	(if (is-fruit val)
-	    (update-closest-pill pos new-distance)
-	    nil)
-	(if (and (is-pill val)
-		 (> distance new-distance)
-		 (not (ghost-on-pos pos)))
-	    (update-closest-pill pos new-distance)
-	    distance))))
+(defun search-at (val pos)
+  (cond ((is-pill val) (set *all-pills* (cons pos *all-pills*)))
+	((is-fruit val) (set *fruit-pos* pos))
+	(t nil)))
 
-(defun pill-row (row x y distance)
+(defun search-row (row x y)
   (if (null row)
-      distance
-      (pill-row (cdr row) (+ x 1) y (pill-at (car row) (cons x y) distance))))
+      nil
+      (progn
+	(search-at (car row) (cons x y))
+	(search-row (cdr row) (+ x 1) y))))
 
-(defun pill-column (map y distance)
+(defun search-column (map y)
   (if (null map)
-      distance
-      (pill-column (cdr map) (+ y 1) (pill-row (car map) 0 y distance))))
+      nil
+      (progn
+	(search-row (car map) 0 y)
+	(search-column (cdr map) (+ y 1)))))
 
 (defvar *new-states*)
 (defvar *old-states*)
@@ -148,16 +147,32 @@
 	   (opposite (lambda-man-dir)))
 	  (t (get-a-star-direction)))))
 
-(defun lambda-man-on-pill ()
-  (pos-eq *closest-pill* (lambda-man-pos)))
+(defun lambda-man-on (pos)
+  (pos-eq pos (lambda-man-pos)))
+
+(defun clean-pill-list (pos)
+  (set *all-pills* (remove-if (lambda (x) (pos-eq pos x)) *all-pills*)))
+
+(defun find-closest-pill (pos pills best score)
+  (if (null pills)
+      best
+      (let ((new-score (manhattan pos (car pills))))
+	(if (> new-score score)
+	    (find-closest-pill pos (cdr pills) best score)
+	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
+
+(defun closest-pill ()
+  (find-closest-pill (lambda-man-pos) *all-pills* nil 512))
 
 (defun search-for-new-pill ()
-  (if (or (fruit-on-board)
-	  (null *closest-pill*)
-	  (lambda-man-on-pill)
-	  (ghost-on-pos *closest-pill*))
-      (pill-column *map* 0 512)
-      nil))
+  (clean-pill-list (lambda-man-pos))
+  (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
+	 (set *closest-pill* *fruit-pos*))
+	((or (null *closest-pill*)
+	     (lambda-man-on *closest-pill*)
+	     (ghost-on-pos *closest-pill*))
+	 (set *closest-pill* (closest-pill)))
+	(t nil)))
 
 (defun a-star ()
   (search-for-new-pill)
@@ -167,6 +182,7 @@
 
 (defun main ()
   (init-globals)
+  (search-column (car arg1) 0)
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
 	    (cons 0 (a-star)))))
