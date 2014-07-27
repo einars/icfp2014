@@ -32,8 +32,7 @@
 
 (defun check-point-pos (pos)
   (let ((pos-point (car pos)))
-    (if (or (= (pos-contents pos-point) 2)
-	    (= (pos-contents pos-point) 3))
+    (if (= (pos-contents pos-point) 2)
 	(list (car pos))
 	0)))
 
