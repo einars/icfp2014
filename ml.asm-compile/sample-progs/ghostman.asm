@@ -145,12 +145,6 @@ map_at_direction:
         curr_dist += abs_w
         f = curr_dist
 
-        if curr_dist > 12 {
-            int 7
-            call set_b_to_random
-            ret
-        }
-
         a = c
         b = d
 
@@ -170,7 +164,8 @@ map_at_direction:
 
         int 7
 
-        b = 0
+        ; ieliks b = 0 /1
+        call slight_chance_of_moving
         if curr_dist < 127 {
                 b = curr_dist
         }
@@ -186,7 +181,10 @@ abs:
         }
         ret
 
-set_b_to_random:
+slight_chance_of_moving:
+    ; maza iespēja, ka b = 1
+    ; liela iespēja, ka b = 0
+
     if initialized = 0 {
         initialized = 1
         seed = my_index
@@ -200,8 +198,11 @@ set_b_to_random:
     b = seed * 8
     xor seed b
 
-    b = seed / 2
-    and b 1
+    b = 0
+    if seed < 32 {
+        b = 1
+    }
+
     ret
 
 
