@@ -85,6 +85,10 @@ let calc_code_size c =
     | [] -> pc
     | `Label _ :: rest -> _rec pc rest
     | `Defconst _ :: rest -> _rec pc rest
+    | `DiPlus _ :: rest -> _rec (pc + 2) rest
+    | `DiMinus _ :: rest -> _rec (pc + 2) rest
+    | `DiTimes _ :: rest -> _rec (pc + 2) rest
+    | `DiDiv _ :: rest -> _rec (pc + 2) rest
     | n :: rest -> _rec (pc + 1) rest
   in
   _rec 0 c
@@ -104,6 +108,17 @@ let rec flatten code =
 
   let rec _rec code_so_far = function
     | [] -> code_so_far
+
+    | `DiPlus (a, b, c) :: rest    ->
+        _rec (code_so_far @ [ `Mov (a, b); `Add (a, c) ]) rest
+    | `DiMinus (a, b, c) :: rest    ->
+        _rec (code_so_far @ [ `Mov (a, b); `Sub (a, c) ]) rest
+    | `DiTimes (a, b, c) :: rest    ->
+        _rec (code_so_far @ [ `Mov (a, b); `Mul (a, c) ]) rest
+    | `DiDiv (a, b, c) :: rest    ->
+        _rec (code_so_far @ [ `Mov (a, b); `Div (a, c) ]) rest
+
+
     | `WhileNeq (a, b, codes) :: rest ->
         let l_skip = random_label () in
         let label2 = random_label () in
@@ -195,23 +210,10 @@ let print_codes code =
     | `Inc (a)    -> printf "INC %s\n" (get_label a); pc := !pc + 1
     | `Dec (a)    -> printf "DEC %s\n" (get_label a); pc := !pc + 1
 
-    | `DiPlus (a, b, c)    ->
-        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
-        printf "ADD %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
-    | `DiMinus (a, b, c)    ->
-        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
-        printf "SUB %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
-    | `DiTimes (a, b, c)    ->
-        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
-        printf "MUL %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
-    | `DiDiv (a, b, c)    ->
-        printf "MOV %s, %s\n" (get_label a) (get_label b); pc := !pc + 1;
-        printf "DIV %s, %s\n" (get_label a) (get_label c); pc := !pc + 1;
-
     | `Jlt (a, b, c) -> printf "JLT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jgt (a, b, c) -> printf "JGT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
-    | `Jmp (t) -> printf "MOV PC, %s; %s\n\n" (get_label t) t; pc := !pc + 1
+    | `Jmp (t) -> printf "MOV PC, %s; %s\n" (get_label t) t; pc := !pc + 1
 
 
     | `Call s -> failwith ("Unprocessed call: call" ^ s)
