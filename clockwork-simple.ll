@@ -35,14 +35,19 @@
 	    move1))))
 
 (defun choose-move (pos)
-  (if (not (null (moves-at-point pos)))
-      (reduce (lambda (move1 move2)
-		(if (= move1 99)
-		    move2
-		    (compare-moves pos move1 move2)))
-	      99
-	      (moves-at-point pos))
-      0))
+  (print (cdr (cdr (cdr *world*))))
+  (if (> (cdr (cdr (cdr *world*))) 0)
+      (a-star)
+      (if (not (null (moves-at-point pos)))
+	  (reduce (lambda (move1 move2)
+		    (if (= move1 99)
+			move2
+			(compare-moves pos move1 move2)))
+		  99
+		  (moves-at-point pos))
+	  0)))
+
+(defvar *closest-pill-calc*)
 
 (defun main ()
   (init-globals)

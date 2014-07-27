@@ -15,6 +15,9 @@
 (defvar *ghost-state*)
 (defvar *lambda-man-pos*)
 
+(defvar *x* 0)
+(defvar *y* 0)
+
 (defun lambda-man-state ()
   (second *world*))
 
@@ -80,6 +83,27 @@
 			(cons  0  1)
 			(cons -1  0))))
 
+(defun find-annotated-element (element world)
+  (mappend-world (lambda (cell)
+		   (if (= (car cell) element)
+		       (list (cons *x* *y*))
+		       0))
+		 world))
+
+(defun mappend-world-reset-xy ()
+  (set *x* -1)
+  (set *y* (+ *y* 1)))
+
+(defun mappend-world (fn world)
+  (set *y* -1)
+  (mappend (lambda (row)
+	     (mappend-world-reset-xy)
+	     (mappend (lambda (cell)			
+			(set *x* (+ *x* 1))
+			(funcall fn cell))
+		      row))
+	   world))
+
 (defun create-annotated-map ()
   (map (lambda (row)
 	 (map (lambda (cell)
@@ -103,7 +127,7 @@
 (defun annotated-row-set (row col val)
   (if (not (= col 0))
       (cons (car row) (annotated-row-set (cdr row) (- col 1) val))
-      (cons (cons (car (car row)) val) (cdr row))))
+      (cons val (cdr row))))
 
 (defun annotated-set (map row col val)
   (if (not (= row 0))
