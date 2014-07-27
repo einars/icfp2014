@@ -54,7 +54,7 @@
   (manhattan pos *closest-pill*))
 
 (defun initial-state ()
-  (list (lambda-man-pos) (distance (lambda-man-pos)) -1))
+  (list (lambda-man-pos) (distance (lambda-man-pos)) -1 -1))
 
 (defun state-pos (state)
   (first state))
@@ -65,6 +65,9 @@
 (defun state-from (state)
   (third state))
 
+(defun state-origin (state)
+  (fourth state))
+
 (defun possible-dirs (pos)
   (remove-if (lambda (dir) (not (can-move pos dir))) *all-dirs*))
 
@@ -73,11 +76,17 @@
 
 (defun create-state (state dir)
   (let ((pos (move (state-pos state) dir)))
-    (list pos (distance pos) (state-dir (state-from state) dir))))
+    (list pos (distance pos) (state-dir (state-from state) dir) dir)))
+
+(defun prune-dirs (state dirs)
+  (let ((bad-dir (opposite (state-origin state))))
+    (if (> (state-origin state) 0)
+	(remove-if (lambda (x) (= bad-dir x)) dirs)
+	dirs)))
 
 (defun possible-neighbors (state)
   (map (lambda (dir) (create-state state dir))
-       (possible-dirs (state-pos state))))
+       (prune-dirs state (possible-dirs (state-pos state)))))
 
 (defun pick-state ()
   (let ((state (first *new-states*)))
