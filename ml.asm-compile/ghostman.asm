@@ -12,6 +12,7 @@ target_x equ [8]
 target_y equ [9]
 
 dist  equ [10]
+game_step  equ [11]
 
 
 
@@ -31,6 +32,8 @@ dir_lt	equ 3
         my_x = a
         my_y = b
 
+        game_step += 1
+
         a = my_index
         int 6
         my_vita = a
@@ -46,6 +49,8 @@ dir_lt	equ 3
         int 1
         target_x = a
         target_y = b
+
+        if game_step < 7 { call scatter }
 
         if my_vita = 1 {
             target_x = 0
@@ -66,6 +71,7 @@ dir_lt	equ 3
             if my_index = 2 {
                 c = 1
             }
+            call advance_target
             call advance_target
         }
 
@@ -222,3 +228,19 @@ slight_chance_of_moving:
     ret
 
 
+scatter:
+    target_x = 3
+    target_y = 3
+    a = my_index
+    and a 3
+    if a = 1 { 
+        target_x = 120
+    }
+    if a = 2 { 
+        target_y = 120
+    }
+    if a = 3 { 
+        target_x = 120
+        target_y = 120
+    }
+    ret
