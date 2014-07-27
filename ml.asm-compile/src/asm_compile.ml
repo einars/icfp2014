@@ -238,7 +238,7 @@ let print_codes code =
     | `Jlt (a, b, c) -> printf "JLT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jgt (a, b, c) -> printf "JGT %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
-    | `Jmp (t) -> printf "JEQ %s, 0, 0\n" (get_label t); pc := !pc + 1
+    | `Jmp (t) -> printf "MOV PC, %s; %s\n\n" (get_label t) t; pc := !pc + 1
 
 
     | `Call s -> failwith ("Unprocessed call: call" ^ s)
