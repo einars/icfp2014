@@ -95,3 +95,8 @@
 (defun manhattan (pos1 pos2)
   (+ (abs (- (car pos1) (car pos2)))
      (abs (- (cdr pos1) (cdr pos2)))))
+
+(defun make-list (n)
+  (if (= n 0)
+      nil
+      (cons nil (make-list (- n 1)))))
