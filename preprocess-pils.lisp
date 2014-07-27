@@ -11,6 +11,7 @@
 	(contents (fourth pos))
 	(depth (nth pos 4)))
     (if (or (is-obstacle new-pos)
+	    (disabled-pill new-pos)
 	    (pos-eq new-pos excluded-move)
 	    (> depth +max-depth+))
 	0

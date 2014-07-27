@@ -73,6 +73,12 @@
 	      (> (+ steps 1) (first (car tunnels)))) t)
 	(t (is-ghost-tunnel pos steps dir (cdr tunnels)))))
 
+(defun disabled-pill (pos)
+  (and (is-unsafe-vitality)
+       (> 4 (manhattan *lambda-man-pos* pos))
+       (not (null (member-if (lambda (x) (pos-eq (third x) pos))
+			     *ghost-tunnels*)))))
+
 (defun power-pill-sacred (value)
   (and (is-power-pill value)
        (or (> *closest-ghost* 5)
@@ -200,7 +206,7 @@
   (if (null pills)
       best
       (let ((new-score (manhattan pos (car pills))))
-	(if (or (> new-score score) (ghost-on-pos (car pills)))
+	(if (or (> new-score score) (disabled-pill (car pills)))
 	    (find-closest-pill pos (cdr pills) best score)
 	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
 
