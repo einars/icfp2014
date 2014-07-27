@@ -153,17 +153,14 @@
 (defun clean-pill-list (pos)
   (set *all-pills* (remove-if (lambda (x) (pos-eq pos x)) *all-pills*)))
 
-(defun find-closest-pill (pos pills best score)
-  (if (null pills)
-      best
-      (let ((new-score (manhattan pos (car pills))))
-	(if (or (> new-score score) (ghost-on-pos (car pills)))
-	    (find-closest-pill pos (cdr pills) best score)
-	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
+(defun find-closest-pill (pos pills)
+  (cond ((null pills) nil)
+	((ghost-on-pos (car pills))
+	 (find-closest-pill pos (cdr pills)))
+	(t (car pills))))
 
 (defun closest-pill ()
-  (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512)
-	 (car *all-pills*)))
+  (or-if (find-closest-pill *lambda-man-pos* *all-pills*) (car *all-pills*)))
 
 (defun search-for-new-pill ()
   (clean-pill-list *lambda-man-pos*)
@@ -184,6 +181,7 @@
 (defun main ()
   (init-globals)
   (search-column (car arg1) 0)
+  (set *all-pills* (walk-pills))
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
 	    (cons 0 (a-star)))))
