@@ -89,25 +89,19 @@ find_good_move:
         
         call map_at_direction
 
-        if b <> 0 {
-                jmp e_int_0_ret
-        }
+        jeq e_int_0_ret b 1
 
         e += 1
         and e 3
 
         call map_at_direction
-        if b <> 0 {
-                jmp e_int_0_ret
-        }
+        jeq e_int_0_ret b 1
 
 
         e += 1
         and e 3
         call map_at_direction
-        if b <> 0 {
-                jmp e_int_0_ret
-        }
+        jeq e_int_0_ret b 1
 
         e += 1
         and e 3
