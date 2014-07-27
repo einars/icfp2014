@@ -88,10 +88,18 @@
   (map (lambda (dir) (create-state state dir))
        (prune-dirs state (possible-dirs (state-pos state)))))
 
+(defun insert-row (item state hash depth)
+  (cons item (insert-old state (cdr hash) (- depth 1))))
+
+(defun insert-old (state hash depth)
+  (cond ((null hash) nil)
+	((= depth 0) (insert-row (cons state (car hash)) state hash depth))
+	(t (insert-row (car hash) state hash depth))))
+
 (defun pick-state ()
   (let ((state (first *new-states*)))
     (set *new-states* (cdr *new-states*))
-    (set *old-states* (cons state *old-states*))
+    (set *old-states* (insert-old state *old-states* (cdr (state-pos state))))
     state))
 
 (defun hit (state)
@@ -110,9 +118,11 @@
 (defun is-not-element (a list)
   (null (member-if (lambda (b) (pos-eq (state-pos a) (state-pos b))) list)))
 
+(defun is-not-in-old-states (state)
+  (is-not-element state (nth *old-states* (cdr (state-pos state)))))
+
 (defun is-new-state (state)
-  (and (is-not-element state *old-states*)
-       (is-not-element state *new-states*)))
+  (and (is-not-in-old-states state) (is-not-element state *new-states*)))
 
 (defun dispatch-neighbor (state rest-states)
   (if (is-new-state state) (push-state state) nil)
@@ -145,7 +155,7 @@
 
 (defun a-star ()
   (search-for-new-pill)
-  (set *old-states* nil)
+  (set *old-states* (make-list (length *map*)))
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
 
