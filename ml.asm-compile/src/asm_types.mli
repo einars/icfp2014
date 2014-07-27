@@ -19,6 +19,9 @@ type code = [
     | `BlockJgt of string * string * code list
     | `BlockJlt of string * string * code list
 
+    | `Call of string
+    | `Ret
+
     | `Jmp of string
     | `Int of string
     | `Hlt

@@ -17,7 +17,7 @@
 %token CMD_JEQ
 %token CMD_INT
 %token CMD_HLT
-%token CMD_JMP
+%token CMD_JMP CMD_CALL CMD_RET
 
 %token EQU IF EQUALS NEQUALS OPEN_BRACE CLOSE_BRACE GT LT PLUSEQ MINUSEQ MULTEQ DIVEQ
 
@@ -54,6 +54,8 @@ stmt:
     | CMD_DEC ; dest = IDENTIFIER;                   { `Dec (dest) }
 
     | CMD_JMP ; targ = IDENTIFIER; opt_comma; { `Jmp (targ) }
+    | CMD_CALL ; targ = IDENTIFIER; opt_comma; { `Call (targ) }
+    | CMD_RET ; { `Ret }
     | CMD_JLT ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jlt (targ, x, y) }
     | CMD_JGT ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jgt (targ, x, y) }
     | CMD_JEQ ; targ = IDENTIFIER; opt_comma; x = IDENTIFIER; opt_comma; y = IDENTIFIER { `Jeq (targ, x, y) }

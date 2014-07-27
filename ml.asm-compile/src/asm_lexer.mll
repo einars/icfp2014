@@ -30,6 +30,8 @@
     | comment { read lexbuf }
     (* | ";" { SEMICOLON } *)
     | ":" { COLON }
+    | "call" { CMD_CALL }
+    | "ret" { CMD_RET }
     | "mov" { CMD_MOV }
     | "inc" { CMD_INC }
     | "dec" { CMD_DEC }

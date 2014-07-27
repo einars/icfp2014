@@ -51,6 +51,9 @@ let stock_labels ()=
 let all_labels = ref (stock_labels() )
 let new_labels = ref label_map_empty
 
+let ret_blocks_used = ref 0
+let ret_table = ref label_map_empty
+
 
 let add_to_map map k v =
   match Map.find map k with
@@ -76,6 +79,8 @@ let gather_labels codes =
     | `BlockJeq _ :: rest -> failwith "Unflattened code: blockjeq"
     | `BlockJgt _ :: rest -> failwith "Unflattened code: blockjgt"
     | `BlockJlt _ :: rest -> failwith "Unflattened code: blockjlt"
+    | `Call _ :: rest -> failwith "Unflattened code: call"
+    | `Ret :: rest -> failwith "Unflattened code: ret"
 
     | h::rest -> _rec (succ pc) rest
   in
@@ -106,6 +111,8 @@ let calc_code_size c =
     | `BlockJeq _ :: rest -> failwith "Unflattened code: blockjeq"
     | `BlockJgt _ :: rest -> failwith "Unflattened code: blockjgt"
     | `BlockJlt _ :: rest -> failwith "Unflattened code: blockjlt"
+    | `Call _ :: rest -> failwith "Unflattened code: call"
+    | `Ret :: rest -> failwith "Unflattened code: ret"
 
   in
   _rec 0 c
@@ -137,7 +144,9 @@ let rec dump_raw code =
   | `Jmp (a) -> sprintf "jmp %s" a
   | `Int (a) -> sprintf "int %s" a
   | `Label (a) -> sprintf "label %s:" a
+  | `Call (a) -> sprintf "call %s" a
   | `Hlt -> sprintf "hlt"
+  | `Ret -> sprintf "ret"
 
   | `Jlt (a, b, c) -> sprintf "jlt %s %s %s" a b c
   | `Jgt (a, b, c) -> sprintf "jgt %s %s %s" a b c
@@ -170,6 +179,15 @@ let rec flatten code =
         let label1 = random_label () in
         let label2 = random_label () in
         _rec ( code_so_far @ [`Jlt (label1, a, b); `Jmp label2; `Label label1 ] @ (flatten codes) @ [`Label label2 ]) rest
+    | `Ret :: rest ->
+        _rec ( code_so_far @ [ `Jmp "lbl$rethandler" ] ) rest
+    | `Call (addr) :: rest ->
+
+        let label = random_label () in
+        ret_blocks_used := succ !ret_blocks_used;
+        ret_table := Map.add !ret_table ~key:(string_of_int !ret_blocks_used) ~data:label;
+        _rec ( code_so_far @ [`Dec "H"; `Mov ("*H", (string_of_int !ret_blocks_used)); `Jmp addr; `Label label ]) rest
+
     | foo :: rest -> _rec (code_so_far @ [foo]) rest
   in
   _rec [] code
@@ -177,8 +195,24 @@ let rec flatten code =
 
   
 
+let make_rethandler () =
+
+  let get_retaddress n = match Map.find !ret_table (string_of_int n) with
+  | Some s -> s
+  | None -> failwith ("Should not happen, unknown address " ^ (string_of_int n))
+  in
+
+  if !ret_blocks_used = 0 then []
+  else begin
+    let l = ref [ `Label "lbl$rethandler"; `Mov ("g", "*h"); `Inc "h" ] in
+    for i = 1 to !ret_blocks_used do
+      l := !l @ [ `Jeq (get_retaddress i,  "g", string_of_int i) ];
+    done;
+    !l
+  end
+
 let preprocess code =
-  (`Mov ("h", "255") ) :: code
+  [`Mov ("h", "255") ] @ code @ (make_rethandler ())
 
 
 
@@ -223,6 +257,8 @@ let print_codes code =
     | `BlockJeq _ -> failwith "Unflattened code: blockjeq"
     | `BlockJgt _ -> failwith "Unflattened code: blockjgt"
     | `BlockJlt _ -> failwith "Unflattened code: blockjlt"
+    | `Call s -> failwith ("Unprocessed call: call" ^ s)
+    | `Ret -> failwith "Unprocessed ret"
 
     | `Int i -> printf "INT %s\n" (get_label i); pc := !pc + 1
     | `Hlt -> printf "HLT\n"; pc := !pc + 1
@@ -240,9 +276,10 @@ let print_codes code =
 let rec parse_and_print lexbuf =
   let parsed = parse_with_error lexbuf in
   let parsed = preprocess (flatten parsed) in
+  (* dump_raw parsed *)
   gather_labels parsed;
   print_codes parsed;
-  Map.iter !new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v);
+  (* Map.iter !new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v); *)
 ;;
 
 
