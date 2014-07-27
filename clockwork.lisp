@@ -227,7 +227,7 @@
   (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
-	((and (>= 2 *closest-ghost*)
+	((and (>= 3 *closest-ghost*)
 	      (consp *closest-ghost-pos*)
 	      (not (is-unsafe-vitality)))
 	 (set *closest-pill* *closest-ghost-pos*))
