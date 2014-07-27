@@ -185,6 +185,7 @@
 
 (defun search-for-new-pill ()
   (clean-pill-list *lambda-man-pos*)
+  (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
 	((and (>= 3 *closest-ghost*)
@@ -210,7 +211,6 @@
 (defun a-star ()
   (search-for-new-pill)
   (set *lives* (lambda-man-lives))
-  (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
   (set *old-states* (make-list (length *map*)))
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
