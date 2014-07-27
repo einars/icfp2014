@@ -71,7 +71,7 @@ dir_lt	equ 3
             if my_index = 2 {
                 c = 1
             }
-            call advance_target
+            ; call advance_target
             call advance_target
         }
 
@@ -83,35 +83,38 @@ dir_lt	equ 3
 find_good_move:
         c = my_x
         d = my_y
-        e = dir_up
 
+        e = dir_up + my_index
+        and e 3
+        
         call map_at_direction
 
         if b <> 0 {
-                a = dir_up
-                jmp int_0_ret
+                jmp e_int_0_ret
         }
 
-        e = dir_rt
+        e += 1
+        and e 3
+
         call map_at_direction
         if b <> 0 {
-                a = dir_rt
-                jmp int_0_ret
+                jmp e_int_0_ret
         }
 
 
-        e = dir_dn
+        e += 1
+        and e 3
         call map_at_direction
         if b <> 0 {
-                a = dir_dn
-                jmp int_0_ret
+                jmp e_int_0_ret
         }
 
-        e = dir_lt
+        e += 1
+        and e 3
         call map_at_direction
         if b <> 0 {
-                a = dir_lt
-                int_0_ret:
+                e_int_0_ret:
+                a = e
                 int 0
                 ; ret
         }
