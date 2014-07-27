@@ -4,12 +4,13 @@ my_mode  equ [1]
 my_x	 equ [2]
 my_y 	 equ [3]
 my_dir 	 equ [4]
+my_vita	 equ [5]
 
-initialized equ [5]
-seed equ [6]
+initialized equ [6]
+seed equ [7]
 
-target_x equ [7]
-target_y equ [8]
+target_x equ [8]
+target_y equ [9]
 
 dist  equ [10]
 
@@ -35,6 +36,7 @@ dir_lt	equ 3
 
         a = my_index
         int 6
+        my_vita = a
         my_dir = b
 
         ; back_dir = atpakaļgaitas virziens, tajā nekad nevarēs iet (tupiki neskaitās, paši nostrādās)
@@ -48,6 +50,13 @@ dir_lt	equ 3
 
         target_x = a
         target_y = b
+        if my_vita = 1 {
+            ; kaut kādu citu koord, ar cerību, ka tīs nah
+            target_x = b
+            target_y = a
+        }
+
+        
 
         c = my_index
         if c != 0 {
