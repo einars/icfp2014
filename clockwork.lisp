@@ -204,11 +204,13 @@
   (not (null (member-if (lambda (x) (pos-eq x *closest-pill*)) *power-pills*))))
 
 (defun search-for-new-pill ()
+  (set *closest-ghost-pos* nil)
   (clean-pill-list *lambda-man-pos*)
   (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
 	((and (>= 4 *closest-ghost*)
+	      (consp *closest-ghost-pos*)
 	      (not (is-safe-vitality)))
 	 (set *closest-pill* *closest-ghost-pos*))
 	((or (null *all-pills*)
@@ -229,13 +231,20 @@
 (defun get-ghost-distance (ghost)
   (manhattan *lambda-man-pos* (second ghost)))
 
+(defun see-if-ghost-in-fright-mode (ghosts)
+  (if (= +fright-mode+ (first (car ghosts)))
+      (set *closest-ghost-pos* (second (car ghosts)))
+      nil))
+
+(defun found-closest-ghost (ghosts ghost-distance)
+  (see-if-ghost-in-fright-mode ghosts)
+  (find-closest-ghost (cdr ghosts) ghost-distance))
+
 (defun find-closest-ghost (ghosts distance)
   (cond ((null ghosts) distance)
 	(t (let ((ghost-distance (get-ghost-distance (car ghosts))))
 	     (if (> distance ghost-distance)
-		 (progn
-		   (set *closest-ghost-pos* (second (car ghosts)))
-		   (find-closest-ghost (cdr ghosts) ghost-distance))
+		 (found-closest-ghost ghosts ghost-distance)
 		 (find-closest-ghost (cdr ghosts) distance))))))
 
 (defun a-star ()

@@ -7,6 +7,9 @@
 (defvar +pill+ 2)
 (defvar +power-pill+ 3)
 
+(defvar +fright-mode+ 1)
+(defvar +invisible+ 2)
+
 (defvar *map*)
 (defvar *world*)
 (defvar *all-dirs*)
