@@ -59,7 +59,7 @@
 	    (let ((closest-point (reduce (lambda (acc x)
 					   (if (> (manhattan acc pos)
 						  (manhattan x pos))
-					       pos
+					       x
 					       acc))
 					 (cons 512 512)
 					 *pill-list*)))
