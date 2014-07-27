@@ -5,25 +5,18 @@ my_x	 equ [2]
 my_y 	 equ [3]
 my_dir 	 equ [4]
 
-pc_x 	 equ [5]
-pc_y 	 equ [6]
-pc_old_x equ [7]
-pc_old_y equ [8]
-pc_dx 	 equ [9]
-pc_dy 	 equ [10]
+initialized equ [5]
+seed equ [6]
 
+target_x equ [7]
+target_y equ [8]
 
-target_x equ [15]
-target_y equ [16]
-
-abs_w    equ [17]
-is_done  equ [18]
-curr_dist  equ [19]
+abs_w    equ [9]
+curr_dist  equ [10]
 
 
 
 back_dir equ [20]
-pc_dir equ [21]
 
 
 dir_up	equ 0
@@ -53,26 +46,15 @@ dir_lt	equ 3
         if my_dir = dir_lt { back_dir = dir_rt }
 
         int 1
-        pc_old_x = pc_x
-        pc_old_y = pc_y
-        pc_x = a
-        pc_y = b
 
+        target_x = a
+        target_y = b
 
-        pc_dx = pc_x - pc_old_x
-        pc_dy = pc_y - pc_old_y
-
-        pc_dir = dir_up
-        if pc_dx = 1 { pc_dir = dir_rt }
-        if pc_dx > 127 { pc_dir = dir_lt }
-        if pc_dy = 1 { pc_dir = dir_dn }
-
-        target_x = pc_x
-        target_y = pc_y
-
-        c = my_index + pc_dir
-        if c > 4 { c -= 4 }
-        call advance_target
+        c = my_index
+        if c != 0 {
+            ; 0 - iet tieši uz mērķi, ne dir_up
+            call advance_target
+        }
 
         call find_good_move
 
@@ -145,8 +127,7 @@ advance_target:
 map_at_direction:
 
         if e = back_dir {
-            a = 0
-            b = 0
+            a = 0 ; wall at the back
             ret
         }
 
@@ -163,6 +144,12 @@ map_at_direction:
         call abs
         curr_dist += abs_w
         f = curr_dist
+
+        if curr_dist > 12 {
+            int 7
+            call set_b_to_random
+            ret
+        }
 
         a = c
         b = d
@@ -198,3 +185,23 @@ abs:
                 add abs_w, 1
         }
         ret
+
+set_b_to_random:
+    if initialized = 0 {
+        initialized = 1
+        seed = my_index
+    }
+    b = seed * 128
+    or seed b
+
+    b = seed / 32
+    xor seed b
+
+    b = seed * 8
+    xor seed b
+
+    b = seed / 2
+    and b 1
+    ret
+
+
