@@ -43,11 +43,17 @@
   (and (= 0 (first ghost))
        (> 2 (manhattan pos (second ghost)))))
 
-(defun matching-ghost (pos)
-  (member-if (lambda (ghost) (bad-ghost pos ghost)) (ghost-state)))
+(defun matching-ghost (pos fn)
+  (member-if (lambda (ghost) (funcall fn pos ghost)) (ghost-state)))
 
 (defun is-pill (val)
   (or (= val +pill+) (= val +power-pill+)))
+
+(defun is-fruit (val)
+  (= val 4))
+
+(defun fruit-on-board ()
+  (> (cdr (cdr (cdr *world*))) 0))
 
 (defun is-consumable (pos)
   (is-pill (pos-contents pos)))
@@ -56,10 +62,7 @@
   (= (pos-contents pos) +wall+))
 
 (defun is-ghost (pos)
-  (not (null (matching-ghost pos))))
-
-(defun can-move (pos dir)
-  (null (is-obstacle (move pos dir))))
+  (not (null (matching-ghost pos bad-ghost))))
 
 (defun init-world (world)
   (set *world* world)

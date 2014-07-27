@@ -7,12 +7,6 @@
   (set *closest-pill* pos)
   new-distance)
 
-(defun is-fruit (val)
-  (= val 4))
-
-(defun fruit-on-board ()
-  (> (cdr (cdr (cdr *world*))) 0))
-
 (defun pill-at (val pos distance)
   (let ((new-distance (player-distance pos)))
     (if (fruit-on-board)
@@ -35,6 +29,19 @@
 
 (defvar *new-states*)
 (defvar *old-states*)
+
+(defun bad-ghost-near (pos ghost)
+  (and (= 0 (first ghost))
+       (pos-eq pos (second ghost))
+       (>= 2 (manhattan (lambda-man-pos) (second ghost)))))
+
+(defun is-ghost-near (pos)
+  (not (null (matching-ghost pos bad-ghost-near))))
+
+(defun can-move (pos dir)
+  (let ((new-pos (move pos dir)))
+    (null (or (= (pos-contents new-pos) +wall+)
+	      (is-ghost-near new-pos)))))
 
 (defun distance (pos)
   (manhattan pos *closest-pill*))
@@ -105,9 +112,10 @@
 
 (defun get-a-star-direction ()
   (let ((result (inspect-state)))
-    (if (consp result)
-	(state-from result)
-	(get-a-star-direction))))
+    (cond ((consp result) (state-from result))
+	  ((null *new-states*)
+	   (opposite (lambda-man-dir)))
+	  (t (get-a-star-direction)))))
 
 (defun lambda-man-on-pill ()
   (pos-eq *closest-pill* (lambda-man-pos)))
@@ -125,45 +133,8 @@
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
 
-(defun ghost-distance (ghost)
-  (manhattan (lambda-man-pos) (second ghost)))
-
-(defun is-threat (ghost)
-  (and (= 0 (first ghost)) (>= 3 (ghost-distance ghost))))
-
-(defun threats (ghosts)
-  (cond ((null ghosts) nil)
-	((is-threat (car ghosts))
-	 (cons (car ghosts) (threats (cdr ghosts))))
-	(t (threats (cdr ghosts)))))
-
-(defun total-distance (ghosts pos)
-  (if (null ghosts)
-      0
-      (+ (manhattan pos (second (car ghosts)))
-	 (total-distance (cdr ghosts) pos))))
-
-(defun total-distance-from (ghosts dir)
-  (total-distance ghosts (move (lambda-man-pos) dir)))
-
-(defun furthest-from (ghosts best-dir distance dirs)
-  (cond ((null dirs) best-dir)
-	(t (let ((new-distance (total-distance-from ghosts (car dirs))))
-	     (if (> new-distance distance)
-		 (furthest-from ghosts (car dirs) new-distance (cdr dirs))
-		 (furthest-from ghosts best-dir distance (cdr dirs)))))))
-
-(defun evade (ghosts)
-  (furthest-from ghosts +dir-N+ 0 (possible-dirs (lambda-man-pos))))
-
-(defun evasive-a-star ()
-  (let ((ghosts (threats (ghost-state))))
-    (if (consp ghosts)
-	(evade ghosts)
-	(a-star))))
-
 (defun main ()
   (init-globals)
   (cons 0 (lambda (old-pos world)
 	    (init-world world)
-	    (cons 0 (evasive-a-star)))))
+	    (cons 0 (a-star)))))
