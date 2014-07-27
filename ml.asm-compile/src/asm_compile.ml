@@ -58,18 +58,6 @@ let add_to_map map k v =
   | None -> Map.add map ~key:k ~data:v
   | Some s -> failwith ("Attempting to redefine \"" ^ k ^ "\" which is " ^ s)
 
-let assert_flattened = function
-    | `BlockJneq _ -> failwith "Unflattened code: blockjneq"
-    | `BlockJeq _ -> failwith "Unflattened code: blockjeq"
-    | `BlockJgt _ -> failwith "Unflattened code: blockjgt"
-    | `BlockJlt _ -> failwith "Unflattened code: blockjlt"
-    | `WhileNeq _ -> failwith "Unflattened code: blockjneq"
-    | `WhileEq _ -> failwith "Unflattened code: blockjeq"
-    | `WhileLt _ -> failwith "Unflattened code: blockjgt"
-    | `WhileGt _ -> failwith "Unflattened code: blockjlt"
-    | `Call _ -> failwith "Unflattened code: call"
-    | `Ret -> failwith "Unflattened code: ret"
-    | _ -> ()
 
 let gather_labels codes =
 
@@ -86,8 +74,7 @@ let gather_labels codes =
         new_labels := add_to_map !new_labels l (string_of_int pc);
         _rec pc rest;
 
-
-    | h::rest -> assert_flattened(h); _rec (succ pc) rest
+    | h::rest -> _rec (succ pc) rest
   in
   ignore(_rec 0 codes)
 
@@ -96,7 +83,7 @@ let calc_code_size c =
     | [] -> pc
     | `Label _ :: rest -> _rec pc rest
     | `Defconst _ :: rest -> _rec pc rest
-    | n :: rest -> assert_flattened(n); _rec (pc + 1) rest
+    | n :: rest -> _rec (pc + 1) rest
   in
   _rec 0 c
 ;;
@@ -109,35 +96,6 @@ let random_label () =
   sprintf "#%d" !random_label_cnt
 
 ;;
-
-
-let rec dump_raw code =
-  let dump_single = function
-  | `Mov (a, b) -> sprintf "mov %s %s" a b
-  | `Add (a, b) -> sprintf "add %s %s" a b
-  | `Sub (a, b) -> sprintf "sub %s %s" a b
-  | `Mul (a, b) -> sprintf "mul %s %s" a b
-  | `Div (a, b) -> sprintf "div %s %s" a b
-  | `And (a, b) -> sprintf "and %s %s" a b
-  | `Or (a, b) -> sprintf "or %s %s" a b
-  | `Xor (a, b) -> sprintf "xor %s %s" a b
-  | `Defconst (a, b) -> sprintf "defconst %s %s" a b
-  | `Inc (a) -> sprintf "inc %s" a
-  | `Dec (a) -> sprintf "dec %s" a
-  | `Jmp (a) -> sprintf "jmp %s" a
-  | `Int (a) -> sprintf "int %s" a
-  | `Label (a) -> sprintf "label %s:" a
-  | `Call (a) -> sprintf "call %s" a
-  | `Hlt -> sprintf "hlt"
-  | `Ret -> sprintf "ret"
-
-  | `Jlt (a, b, c) -> sprintf "jlt %s %s %s" a b c
-  | `Jgt (a, b, c) -> sprintf "jgt %s %s %s" a b c
-  | `Jeq (a, b, c) -> sprintf "jeq %s %s %s" a b c
-  | n -> sprintf "????"
-in
-  List.iter code (fun elem -> printf "%s\n" (dump_single elem))
-
 
 
 let rec flatten code =
@@ -261,7 +219,6 @@ let print_codes code =
 let rec parse_and_print lexbuf =
   let parsed = parse_with_error lexbuf in
   let parsed = preprocess (flatten parsed) in
-  (* dump_raw parsed *)
   gather_labels parsed;
   print_codes parsed;
   (* Map.iter !new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v); *)
@@ -277,7 +234,7 @@ let loop filename () =
 
 
 let () =
-  Command.basic ~summary:"Parse and display JSON"
+  Command.basic ~summary:"ICFP-2014 ghost assembly compiler"
     Command.Spec.(empty +> anon ("filename" %: file))
     loop 
   |> Command.run
