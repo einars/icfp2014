@@ -1,6 +1,7 @@
 (defvar *lives*)
 (defvar *fruit-pos*)
 (defvar *all-pills*)
+(defvar *power-pills*)
 (defvar *closest-pill*)
 (defvar *closest-ghost*)
 
@@ -15,6 +16,7 @@
   (not (null (member-if (lambda (x) (is-ghost-pos pos x)) *ghost-state*))))
 
 (defun search-at (val pos)
+  (if (is-power-pill val) (set *power-pills* (cons pos *power-pills*)) nil)
   (cond ((is-pill val) (set *all-pills* (cons pos *all-pills*)))
 	((is-fruit val) (set *fruit-pos* pos))
 	(t nil)))
@@ -161,8 +163,12 @@
 (defun lambda-man-on (pos)
   (pos-eq pos *lambda-man-pos*))
 
+(defun remove-pos (list pos)
+  (remove-if (lambda (x) (pos-eq pos x)) list))
+
 (defun clean-pill-list (pos)
-  (set *all-pills* (remove-if (lambda (x) (pos-eq pos x)) *all-pills*)))
+  (set *power-pills* (remove-pos *power-pills* pos))
+  (set *all-pills* (remove-pos *all-pills* pos)))
 
 (defun find-closest-pill (pos pills best score)
   (if (null pills)
@@ -181,6 +187,9 @@
   (clean-pill-list *lambda-man-pos*)
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
+	((and (>= 3 *closest-ghost*)
+	      (consp *power-pills*))
+	 (set *closest-pill* (car *power-pills*)))
 	((or (null *closest-pill*)
 	     (lambda-man-on *closest-pill*)
 	     (ghost-on-pos *closest-pill*)

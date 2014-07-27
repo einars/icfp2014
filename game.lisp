@@ -56,6 +56,9 @@
 (defun matching-ghost (pos fn)
   (member-if (lambda (ghost) (funcall fn pos ghost)) *ghost-state*))
 
+(defun is-power-pill (val)
+  (= val +power-pill+))
+
 (defun is-pill (val)
   (or (= val +pill+) (= val +power-pill+)))
 
