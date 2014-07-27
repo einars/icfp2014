@@ -47,6 +47,7 @@
     | "hlt" { CMD_HLT }
     | "equ" { EQU }
     | "if" { IF }
+    | "jmp" { CMD_JMP }
 
     | ">" { GT }
     | "<" { LT }
