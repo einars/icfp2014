@@ -4,6 +4,7 @@
 (defvar *power-pills*)
 (defvar *closest-pill*)
 (defvar *closest-ghost*)
+(defvar *ghost-tunnels*)
 (defvar *closest-ghost-pos*)
 
 (defun player-distance (pos)
@@ -49,29 +50,37 @@
   (or (pos-eq pos (second ghost))
       (pos-eq pos (ghost-next-pos ghost))))
 
-(defun is-safe-vitality ()
+(defun is-unsafe-vitality ()
   (> 500 *vitality*))
 
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
-       (is-safe-vitality)
+       (is-unsafe-vitality)
        (is-ghost-pos pos ghost)
        (>= 3 (manhattan *lambda-man-pos* (second ghost)))))
 
 (defun is-ghost-near (pos)
   (not (null (matching-ghost pos bad-ghost-near))))
 
+(defun is-ghost-tunnel (pos steps tunnels)
+  (cond ((> steps 5) 0)
+	((null tunnels) 0)
+	((not (is-unsafe-vitality)) 0)
+	((and (pos-eq pos (cdr (car tunnels)))
+	      (> (+ steps 1) (car (car tunnels)))) t)
+	(t (is-ghost-tunnel pos steps (cdr tunnels)))))
+
 (defun power-pill-sacred (value)
   (and (is-power-pill value)
        (or (> *closest-ghost* 5)
-	   (not (is-safe-vitality)))))
+	   (not (is-unsafe-vitality)))))
 
-(defun can-move (pos dir)
+(defun can-move (pos dir steps)
   (let ((new-pos (move pos dir)))
     (let ((new-val (pos-contents new-pos)))
       (null (or (= new-val +wall+)
 		(power-pill-sacred new-val)
-		(is-ghost-near new-pos))))))
+		(is-ghost-tunnel new-pos steps *ghost-tunnels*))))))
 
 (defun distance (pos)
   (manhattan pos *closest-pill*))
@@ -94,8 +103,8 @@
 (defun state-moves (state)
   (fifth state))
 
-(defun possible-dirs (pos)
-  (remove-if (lambda (dir) (not (can-move pos dir))) *all-dirs*))
+(defun possible-dirs (pos steps)
+  (remove-if (lambda (dir) (not (can-move pos dir steps))) *all-dirs*))
 
 (defun state-dir (from dir)
   (if (> 0 from) dir from))
@@ -113,7 +122,8 @@
 
 (defun possible-neighbors (state)
   (map (lambda (dir) (create-state state dir))
-       (prune-dirs state (possible-dirs (state-pos state)))))
+       (prune-dirs state (possible-dirs (state-pos state)
+					(state-moves state)))))
 
 (defun insert-row (item state hash depth)
   (cons item (insert-old state (cdr hash) (- depth 1))))
@@ -208,7 +218,7 @@
 	 (set *closest-pill* *fruit-pos*))
 	((and (>= 4 *closest-ghost*)
 	      (consp *closest-ghost-pos*)
-	      (not (is-safe-vitality)))
+	      (not (is-unsafe-vitality)))
 	 (set *closest-pill* *closest-ghost-pos*))
 	((or (null *all-pills*)
 	     (and (>= 3 *closest-ghost*)
@@ -244,7 +254,26 @@
 		 (found-closest-ghost ghosts ghost-distance)
 		 (find-closest-ghost (cdr ghosts) distance))))))
 
+(defun possible-moves (pos)
+  (remove-if (lambda (dir) (is-obstacle (move pos dir))) *all-dirs*))
+
+(defun is-junction (pos)
+  (> (length (possible-moves pos)) 2))
+
+(defun advance-tunnel (pos dir steps)
+  (cond ((is-obstacle pos) nil)
+	((is-junction pos) (list (cons steps pos)))
+	(t (cons (cons steps pos)
+		 (advance-tunnel (move pos dir) dir (+ steps 1))))))
+
+(defun build-one-tunnel (ghost)
+  (advance-tunnel (second ghost) (cdr (cdr ghost)) 0))
+
+(defun build-ghost-tunnels ()
+  (set *ghost-tunnels* (mappend build-one-tunnel *ghost-state*)))
+
 (defun a-star ()
+  (build-ghost-tunnels)
   (search-for-new-pill)
   (set *lives* (lambda-man-lives))
   (set *old-states* (make-list (length *map*)))
