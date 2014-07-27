@@ -10,9 +10,12 @@
 (defun is-fruit (val)
   (= val 4))
 
+(defun fruit-on-board ()
+  (> (cdr (cdr (cdr *world*))) 0))
+
 (defun pill-at (val pos distance)
   (let ((new-distance (player-distance pos)))
-    (if (> (cdr (cdr (cdr *world*))) 0)
+    (if (fruit-on-board)
 	(if (is-fruit val)
 	    (update-closest-pill pos new-distance)
 	    nil)
@@ -106,8 +109,18 @@
 	(state-from result)
 	(get-a-star-direction))))
 
+(defun lambda-man-on-pull ()
+  (pos-eq *closest-pill* (lambda-man-pos)))
+
+(defun search-for-new-pill ()
+  (if (or (fruit-on-board)
+	  (null *closest-pill*)
+	  (lambda-man-on-pill))
+      (pill-column *map* 0 512)
+      nil))
+
 (defun a-star ()
-  (pill-column *map* 0 512)
+  (search-for-new-pill)
   (set *old-states* nil)
   (set *new-states* (list (initial-state)))
   (get-a-star-direction))
