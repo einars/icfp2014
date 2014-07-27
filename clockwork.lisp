@@ -3,14 +3,14 @@
 (defvar *closest-pill*)
 
 (defun player-distance (pos)
-  (manhattan (lambda-man-pos) pos))
+  (manhattan *lambda-man-pos* pos))
 
 (defun update-closest-pill (pos new-distance)
   (set *closest-pill* pos)
   new-distance)
 
 (defun ghost-on-pos (pos)
-  (not (null (member-if (lambda (x) (is-ghost-pos pos x)) (ghost-state)))))
+  (not (null (member-if (lambda (x) (is-ghost-pos pos x)) *ghost-state*))))
 
 (defun search-at (val pos)
   (cond ((is-pill val) (set *all-pills* (cons pos *all-pills*)))
@@ -44,7 +44,7 @@
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
        (is-ghost-pos pos ghost)
-       (>= 3 (manhattan (lambda-man-pos) (second ghost)))))
+       (>= 3 (manhattan *lambda-man-pos* (second ghost)))))
 
 (defun is-ghost-near (pos)
   (not (null (matching-ghost pos bad-ghost-near))))
@@ -58,7 +58,7 @@
   (manhattan pos *closest-pill*))
 
 (defun initial-state ()
-  (list (lambda-man-pos) (distance (lambda-man-pos)) -1 -1))
+  (list *lambda-man-pos* (distance *lambda-man-pos*) -1 -1))
 
 (defun state-pos (state)
   (first state))
@@ -148,7 +148,7 @@
 	  (t (get-a-star-direction)))))
 
 (defun lambda-man-on (pos)
-  (pos-eq pos (lambda-man-pos)))
+  (pos-eq pos *lambda-man-pos*))
 
 (defun clean-pill-list (pos)
   (set *all-pills* (remove-if (lambda (x) (pos-eq pos x)) *all-pills*)))
@@ -162,10 +162,10 @@
 	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
 
 (defun closest-pill ()
-  (find-closest-pill (lambda-man-pos) *all-pills* nil 512))
+  (find-closest-pill *lambda-man-pos* *all-pills* nil 512))
 
 (defun search-for-new-pill ()
-  (clean-pill-list (lambda-man-pos))
+  (clean-pill-list *lambda-man-pos*)
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
 	((or (null *closest-pill*)

@@ -12,6 +12,9 @@
 (defvar *all-dirs*)
 (defvar *dir-list*)
 
+(defvar *ghost-state*)
+(defvar *lambda-man-pos*)
+
 (defun lambda-man-state ()
   (second *world*))
 
@@ -44,7 +47,7 @@
        (> 2 (manhattan pos (second ghost)))))
 
 (defun matching-ghost (pos fn)
-  (member-if (lambda (ghost) (funcall fn pos ghost)) (ghost-state)))
+  (member-if (lambda (ghost) (funcall fn pos ghost)) *ghost-state*))
 
 (defun is-pill (val)
   (or (= val +pill+) (= val +power-pill+)))
@@ -66,7 +69,9 @@
 
 (defun init-world (world)
   (set *world* world)
-  (set *map* (car world)))
+  (set *map* (car world))
+  (set *ghost-state* (ghost-state))
+  (set *lambda-man-pos* (lambda-man-pos)))
 
 (defun init-globals ()
   (set *all-dirs* (list 0 1 2 3))
