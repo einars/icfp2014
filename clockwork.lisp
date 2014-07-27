@@ -109,7 +109,7 @@
 	(state-from result)
 	(get-a-star-direction))))
 
-(defun lambda-man-on-pull ()
+(defun lambda-man-on-pill ()
   (pos-eq *closest-pill* (lambda-man-pos)))
 
 (defun search-for-new-pill ()
