@@ -28,6 +28,9 @@
 (defun lambda-man-dir ()
   (third (lambda-man-state)))
 
+(defun lambda-man-lives ()
+  (fourth (lambda-man-state)))
+
 (defun map-elt (pos map)
   (nth (nth map (cdr pos)) (car pos)))
 
