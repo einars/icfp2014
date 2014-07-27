@@ -18,6 +18,9 @@
 (defun fourth (list)
   (nth list 3))
 
+(defun fifth (list)
+  (nth list 4))
+
 (defun not (a)
   (if (null a) t 0))
 
