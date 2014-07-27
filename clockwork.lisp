@@ -43,6 +43,7 @@
 
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
+       (> 200 *vitality*)
        (is-ghost-pos pos ghost)
        (>= 3 (manhattan *lambda-man-pos* (second ghost)))))
 

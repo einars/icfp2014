@@ -12,6 +12,7 @@
 (defvar *all-dirs*)
 (defvar *dir-list*)
 
+(defvar *vitality*)
 (defvar *ghost-state*)
 (defvar *lambda-man-pos*)
 
@@ -74,6 +75,7 @@
   (set *world* world)
   (set *map* (car world))
   (set *ghost-state* (ghost-state))
+  (set *vitality* (first (lambda-man-state)))
   (set *lambda-man-pos* (lambda-man-pos)))
 
 (defun init-globals ()
