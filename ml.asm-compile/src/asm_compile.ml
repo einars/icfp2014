@@ -48,6 +48,9 @@ let stock_labels ()=
 
   !map
 
+let all_labels = ref (stock_labels() )
+let new_labels = ref label_map_empty
+
 
 let add_to_map map k v =
   match Map.find map k with
@@ -55,31 +58,28 @@ let add_to_map map k v =
   | Some s -> failwith ("Attempting to redefine \"" ^ k ^ "\" which is " ^ s)
 
 let gather_labels codes =
-  let map = ref (stock_labels ()) in
-  let jmap = ref label_map_empty in
 
   let rec _rec pc = function
     | [] -> pc
 
     | `Defconst (a,b) :: rest ->
-        map := add_to_map !map a b;
-        jmap := add_to_map !jmap a b;
+        all_labels := add_to_map !all_labels a b;
+        new_labels := add_to_map !new_labels a b;
         _rec pc rest;
 
     | `Label l :: rest ->
-        map := add_to_map !map l (string_of_int pc);
-        jmap := add_to_map !jmap l (string_of_int pc);
+        all_labels := add_to_map !all_labels l (string_of_int pc);
+        new_labels := add_to_map !new_labels l (string_of_int pc);
         _rec pc rest;
 
-    | `BlockJneq (a, b, codes) :: rest -> _rec (_rec (pc + 1) codes) rest
-    | `BlockJeq (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
-    | `BlockJgt (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
-    | `BlockJlt (a, b, codes) :: rest -> _rec (_rec (pc + 2) codes) rest
+    | `BlockJneq _ :: rest -> failwith "Unflattened code: blockjneq"
+    | `BlockJeq _ :: rest -> failwith "Unflattened code: blockjeq"
+    | `BlockJgt _ :: rest -> failwith "Unflattened code: blockjgt"
+    | `BlockJlt _ :: rest -> failwith "Unflattened code: blockjlt"
 
     | h::rest -> _rec (succ pc) rest
   in
-  ignore(_rec 0 codes);
-  !map, !jmap
+  ignore(_rec 0 codes)
 
 let calc_code_size c =
   let rec _rec pc = function
@@ -102,16 +102,88 @@ let calc_code_size c =
     | `Hlt :: rest -> _rec (pc + 1) rest
     | `Label _ :: rest -> _rec pc rest
     | `Defconst _ :: rest -> _rec pc rest
-    | `BlockJneq (a, b, codes) :: rest -> _rec (pc + 1 + _rec 0 codes) rest
-    | `BlockJeq (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
-    | `BlockJgt (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
-    | `BlockJlt (a, b, codes) :: rest -> _rec (pc + 2 + _rec 0 codes) rest
+    | `BlockJneq _ :: rest -> failwith "Unflattened code: blockjneq"
+    | `BlockJeq _ :: rest -> failwith "Unflattened code: blockjeq"
+    | `BlockJgt _ :: rest -> failwith "Unflattened code: blockjgt"
+    | `BlockJlt _ :: rest -> failwith "Unflattened code: blockjlt"
 
   in
   _rec 0 c
 ;;
 
-let print_codes code labels =
+
+let random_label_cnt = ref 0
+
+let random_label () =
+  random_label_cnt := !random_label_cnt + 1;
+  sprintf "lbl$%d" !random_label_cnt
+
+;;
+
+
+let rec dump_raw code =
+  let dump_single = function
+  | `Mov (a, b) -> sprintf "mov %s %s" a b
+  | `Add (a, b) -> sprintf "add %s %s" a b
+  | `Sub (a, b) -> sprintf "sub %s %s" a b
+  | `Mul (a, b) -> sprintf "mul %s %s" a b
+  | `Div (a, b) -> sprintf "div %s %s" a b
+  | `And (a, b) -> sprintf "and %s %s" a b
+  | `Or (a, b) -> sprintf "or %s %s" a b
+  | `Xor (a, b) -> sprintf "xor %s %s" a b
+  | `Defconst (a, b) -> sprintf "defconst %s %s" a b
+  | `Inc (a) -> sprintf "inc %s" a
+  | `Dec (a) -> sprintf "dec %s" a
+  | `Jmp (a) -> sprintf "jmp %s" a
+  | `Int (a) -> sprintf "int %s" a
+  | `Label (a) -> sprintf "label %s:" a
+  | `Hlt -> sprintf "hlt"
+
+  | `Jlt (a, b, c) -> sprintf "jlt %s %s %s" a b c
+  | `Jgt (a, b, c) -> sprintf "jgt %s %s %s" a b c
+  | `Jeq (a, b, c) -> sprintf "jeq %s %s %s" a b c
+  | `BlockJeq _ -> sprintf "blockjeq???"
+  | `BlockJneq _ -> sprintf "blockjneq???"
+  | `BlockJgt _ -> sprintf "blockjgt???"
+  | `BlockJlt _ -> sprintf "blockjlt???"
+in
+  List.iter code (fun elem -> printf "%s\n" (dump_single elem))
+
+
+
+let rec flatten code =
+
+  let rec _rec code_so_far = function
+    | [] -> code_so_far
+    | `BlockJneq (a, b, codes) :: rest ->
+        let label1 = random_label () in
+        _rec ( code_so_far @ [`Jeq (label1, a, b); ] @ (flatten codes) @ [`Label label1 ]) rest
+    | `BlockJeq (a, b, codes) :: rest ->
+        let label1 = random_label () in
+        let label2 = random_label () in
+        _rec ( code_so_far @ [`Jeq (label1, a, b); `Jmp label2; `Label label1 ] @ (flatten codes) @ [`Label label2 ]) rest
+    | `BlockJgt (a, b, codes) :: rest ->
+        let label1 = random_label () in
+        let label2 = random_label () in
+        _rec ( code_so_far @ [`Jgt (label1, a, b); `Jmp label2; `Label label1 ] @ (flatten codes) @ [`Label label2 ]) rest
+    | `BlockJlt (a, b, codes) :: rest ->
+        let label1 = random_label () in
+        let label2 = random_label () in
+        _rec ( code_so_far @ [`Jlt (label1, a, b); `Jmp label2; `Label label1 ] @ (flatten codes) @ [`Label label2 ]) rest
+    | foo :: rest -> _rec (code_so_far @ [foo]) rest
+  in
+  _rec [] code
+
+
+  
+
+let preprocess code =
+  (`Mov ("h", "255") ) :: code
+
+
+
+
+let print_codes code =
   let maybe_convert_to_ref s =
     if (s.[0] = '*') then
       sprintf "[%s]" (String.drop_prefix s 1)
@@ -121,7 +193,7 @@ let print_codes code labels =
   let rec get_label (label:string) =
     if (label.[0] = '*') then
       sprintf "[%s]" (get_label (String.drop_prefix label 1))
-    else (match Map.find labels label with
+    else (match Map.find !all_labels label with
     | None -> failwith ("Unknown label " ^ label)
     | Some s -> maybe_convert_to_ref s)
 
@@ -147,39 +219,17 @@ let print_codes code labels =
     | `Jeq (a, b, c) -> printf "JEQ %s, %s, %s\n" (get_label a) (get_label b) (get_label c); pc := !pc + 1
     | `Jmp (t) -> printf "JEQ %s, 0, 0\n" (get_label t); pc := !pc + 1
 
-    | `BlockJneq (a, b, codes) ->
-        let code_size = calc_code_size codes in
-        printf "JEQ %d, %s, %s\n" (!pc + code_size + 1) (get_label a) (get_label b);
-        pc := !pc + 1;
-        List.iter codes iter_fn;
-
-    | `BlockJeq (a, b, codes) ->
-        let code_size = calc_code_size codes in
-        printf "JEQ %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
-        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
-        pc := !pc + 2;
-        List.iter codes iter_fn;
-
-    | `BlockJgt (a, b, codes) ->
-        let code_size = calc_code_size codes in
-        printf "JGT %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
-        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
-        pc := !pc + 2;
-        List.iter codes iter_fn;
-
-    | `BlockJlt (a, b, codes) ->
-        let code_size = calc_code_size codes in
-        printf "JLT %d, %s, %s\n" (!pc + 2) (get_label a) (get_label b);
-        printf "JEQ %d, 0, 0\n" (!pc + code_size + 2);
-        pc := !pc + 2;
-        List.iter codes iter_fn;
-
+    | `BlockJneq _ -> failwith "Unflattened code: blockjneq"
+    | `BlockJeq _ -> failwith "Unflattened code: blockjeq"
+    | `BlockJgt _ -> failwith "Unflattened code: blockjgt"
+    | `BlockJlt _ -> failwith "Unflattened code: blockjlt"
 
     | `Int i -> printf "INT %s\n" (get_label i); pc := !pc + 1
     | `Hlt -> printf "HLT\n"; pc := !pc + 1
     | `Label l -> ()
     | `Defconst l -> ()
   in
+
 
   List.iter code iter_fn ;
 
@@ -189,9 +239,10 @@ let print_codes code labels =
 
 let rec parse_and_print lexbuf =
   let parsed = parse_with_error lexbuf in
-  let all_labels, new_labels = gather_labels parsed in
-  print_codes parsed all_labels;
-  Map.iter new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v);
+  let parsed = preprocess (flatten parsed) in
+  gather_labels parsed;
+  print_codes parsed;
+  Map.iter !new_labels (fun ~key:k ~data:v -> printf "; %s = %s\n" k v);
 ;;
 
 
