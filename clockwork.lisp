@@ -91,7 +91,7 @@
 (defun state-origin (state)
   (fourth state))
 
-(defun state-pills (state)
+(defun state-moves (state)
   (fifth state))
 
 (defun possible-dirs (pos)
@@ -103,7 +103,7 @@
 (defun create-state (state dir)
   (let ((pos (move (state-pos state) dir)))
     (list pos (distance pos) (state-dir (state-from state) dir) dir
-	  (+ (state-pills state) (is-pill (pos-contents pos))))))
+	  (+ (state-moves state) 1))))
 
 (defun prune-dirs (state dirs)
   (let ((bad-dir (opposite (state-origin state))))
@@ -134,9 +134,6 @@
 
 (defun compare-states (state1 state2)
   (> (state-distance state2) (state-distance state1)))
-;  (or (> (state-pills state2) (state-pills state1))
-;      (and (= (state-pills state2) (state-pills state1))
-;	   (> (state-distance state2) (state-distance state1)))))
 
 (defun insert (state list)
   (cond ((null list) (list state))
