@@ -7,6 +7,8 @@
 (defvar *ghost-tunnels*)
 (defvar *closest-ghost-pos*)
 
+(defvar +tunnel-depth+ 5)
+
 (defun player-distance (pos)
   (manhattan *lambda-man-pos* pos))
 
@@ -63,7 +65,7 @@
   (not (null (matching-ghost pos bad-ghost-near))))
 
 (defun is-ghost-tunnel (pos steps dir tunnels)
-  (cond ((> steps 5) 0)
+  (cond ((> steps +tunnel-depth+) 0)
 	((null tunnels) 0)
 	((not (is-unsafe-vitality)) 0)
 	((and (pos-eq pos (third (car tunnels)))
@@ -181,7 +183,7 @@
   (let ((result (inspect-state)))
     (cond ((consp result) (state-from result))
 	  ((null *new-states*)
-	   (opposite (lambda-man-dir)))
+	   (car (possible-moves *lambda-man-pos* (lambda-man-dir))))
 	  (t (get-a-star-direction)))))
 
 (defun lambda-man-on (pos)
@@ -259,7 +261,7 @@
 
 (defun possible-moves (pos origin)
   (remove-if (lambda (dir)
-	       (or (= dir origin)
+	       (or (= dir (opposite origin))
 		   (is-obstacle (move pos dir)))) *all-dirs*))
 
 (defun mappend-tunnels (pos dir steps)
@@ -268,7 +270,7 @@
 	   (possible-moves pos dir)))
 
 (defun advance-tunnel (pos dir steps)
-  (if (= steps 5)
+  (if (= steps +tunnel-depth+)
       nil
       (cons (list steps dir pos) (mappend-tunnels pos dir steps))))
 
