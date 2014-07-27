@@ -40,7 +40,7 @@
   (cond ((null exp-list) nil)
 	(t (append (compile-lm (first exp-list) env)
 		   (when (> (length exp-list) 1) padding)
-		   (compile-list (rest exp-list) env)))))
+		   (compile-list (rest exp-list) env padding)))))
 
 (defun apply-defined (exp env)
   (append (compile-list (rest exp) env)
