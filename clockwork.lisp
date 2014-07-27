@@ -81,7 +81,10 @@
     (let ((new-val (pos-contents new-pos)))
       (null (or (= new-val +wall+)
 		(power-pill-sacred new-val)
-		(is-ghost-tunnel new-pos (state-moves state) (state-origin state) *ghost-tunnels*))))))
+		(is-ghost-tunnel new-pos
+				 (state-moves state)
+				 (state-origin state)
+				 *ghost-tunnels*))))))
 
 (defun distance (pos)
   (manhattan pos *closest-pill*))
