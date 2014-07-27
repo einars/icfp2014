@@ -45,7 +45,7 @@
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
        (is-ghost-pos pos ghost)
-       (>= 2 (manhattan (lambda-man-pos) (second ghost)))))
+       (>= 3 (manhattan (lambda-man-pos) (second ghost)))))
 
 (defun is-ghost-near (pos)
   (not (null (matching-ghost pos bad-ghost-near))))
