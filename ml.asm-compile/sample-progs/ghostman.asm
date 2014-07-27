@@ -165,7 +165,11 @@ map_at_direction:
         int 7
 
         ; ieliks b = 0 /1
-        call slight_chance_of_moving
+        b = 0
+        if f > 8 {
+            ; ja esam super-tuvu, tad bez muļķībām
+            call slight_chance_of_moving
+        }
         if curr_dist < 127 {
                 b = curr_dist
         }
