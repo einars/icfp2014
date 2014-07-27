@@ -157,7 +157,7 @@
   (if (null pills)
       best
       (let ((new-score (manhattan pos (car pills))))
-	(if (> new-score score)
+	(if (or (> new-score score) (ghost-on-pos (car pills)))
 	    (find-closest-pill pos (cdr pills) best score)
 	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
 
