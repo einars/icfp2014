@@ -51,17 +51,17 @@ dir_lt	equ 3
         target_x = a
         target_y = b
         if my_vita = 1 {
-            ; kaut kādu citu koord, ar cerību, ka tīs nah
-            target_x = b
-            target_y = a
+            target_x = 0
+            target_y = 0
         }
 
         
 
         c = my_index
-        if c != 0 {
+        if c <> 0 {
             ; 0 - iet tieši uz mērķi, ne dir_up
             call advance_target
+            ;call advance_target
         }
 
         call find_good_move
@@ -76,41 +76,33 @@ find_good_move:
 
         call map_at_direction
 
-        if a != 0 {
-                if b != 0 {
-                        a = dir_up
-                        jmp int_0_ret
-                }
+        if b <> 0 {
+                a = dir_up
+                jmp int_0_ret
         }
 
         e = dir_rt
         call map_at_direction
-        if a != 0 {
-                if b != 0 {
-                        a = dir_rt
-                        jmp int_0_ret
-                }
+        if b <> 0 {
+                a = dir_rt
+                jmp int_0_ret
         }
 
 
         e = dir_dn
         call map_at_direction
-        if a != 0 {
-                if b != 0 {
-                        a = dir_dn
-                        jmp int_0_ret
-                }
+        if b <> 0 {
+                a = dir_dn
+                jmp int_0_ret
         }
 
         e = dir_lt
         call map_at_direction
-        if a != 0 {
-                if b != 0 {
-                        a = dir_lt
-                        int_0_ret:
-                        int 0
-                        ; ret
-                }
+        if b <> 0 {
+                a = dir_lt
+                int_0_ret:
+                int 0
+                ; ret
         }
 
         ret
@@ -133,7 +125,8 @@ advance_target:
 map_at_direction:
 
         if e = back_dir {
-            a = 0 ; wall at the back
+            a = 0
+            b = 0 ; wall at the back
             ret
         }
 
@@ -190,14 +183,15 @@ map_at_direction:
 
         int 7
 
+
         ; ieliks b = 0 /1
         b = 0
-        if f >= 9 {
-            ; ja esam super-tuvu, tad bez muļķībām
+        if a <> 0 {
+            ; lieto f kā parametru
             call slight_chance_of_moving
-        }
-        if dist <= 127 {
-                b = dist
+            if dist <= 127 {
+                b = 1
+            }
         }
 
         ret
@@ -209,19 +203,14 @@ slight_chance_of_moving:
 
     if initialized = 0 {
         initialized = 1
-        seed = my_index
+        seed = my_index + 3
     }
-    b = seed * 128
-    or seed b
 
-    b = seed / 32
-    xor seed b
-
-    b = seed * 8
-    xor seed b
+    seed *= 179
+    seed += 177
 
     b = 0
-    if seed <= 31 {
+    if seed <= f {
         b = 1
     }
 
