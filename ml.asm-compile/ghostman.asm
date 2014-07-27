@@ -1,6 +1,5 @@
 
 my_index equ [0]
-my_mode  equ [1]
 my_x	 equ [2]
 my_y 	 equ [3]
 my_dir 	 equ [4]
@@ -27,8 +26,6 @@ dir_lt	equ 3
 
         int 3
         my_index = a
-        if a >= 4 { a -= 4 }
-        my_mode = a
 
         int 5
         my_x = a
@@ -47,9 +44,9 @@ dir_lt	equ 3
         if my_dir = dir_lt { back_dir = dir_rt }
 
         int 1
-
         target_x = a
         target_y = b
+
         if my_vita = 1 {
             target_x = 0
             target_y = 0
@@ -60,8 +57,16 @@ dir_lt	equ 3
         c = my_index
         if c <> 0 {
             ; 0 - iet tieši uz mērķi, ne dir_up
+
+            ; noswapojam spoku 1 un 2 virzienus, lai divu spoku gadījumā viņi
+            ; netaisītu stūri, bet līniju
+            if my_index = 1 {
+                c = 2
+            }
+            if my_index = 2 {
+                c = 1
+            }
             call advance_target
-            ;call advance_target
         }
 
         call find_good_move
@@ -203,7 +208,7 @@ slight_chance_of_moving:
 
     if initialized = 0 {
         initialized = 1
-        seed = my_index + 3
+        seed = my_index + 4
     }
 
     seed *= 179
