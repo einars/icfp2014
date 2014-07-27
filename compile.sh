@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -e "$1" ]; then
-    cat lib.lisp game.lisp $1 $2 > /tmp/tmp.lisp
+    cat lib.lisp game.lisp preprocess-pils.lisp $1 $2 > /tmp/tmp.lisp
     if [ "$2" == "nolibs" ]; then
 	cp $1 /tmp/tmp.lisp
     fi

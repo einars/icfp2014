@@ -4,19 +4,13 @@
 (defvar *pill-count*)
 (defvar +max-depth+ 5)
 
-(defun pos-contents-stored (pos)
-  (car (annotated-get *stored-world* (cdr pos) (car pos))))
-
-(defun is-obstacle-stored (pos)
-  (= (pos-contents-stored pos) +wall+))
-
 (defun try-move-at-point (pos direction)
   (let ((new-pos (move (car pos) direction))
 	(excluded-move (second pos))
 	(original-direction (third pos))
 	(contents (fourth pos))
 	(depth (nth pos 4)))
-    (if (or (is-obstacle-stored new-pos)
+    (if (or (is-obstacle new-pos)
 	    (pos-eq new-pos excluded-move)
 	    (> depth +max-depth+))
 	0
@@ -25,7 +19,7 @@
 		    (if (> original-direction 3)
 			direction
 			original-direction)
-		    (pos-contents-stored new-pos)
+		    (pos-contents new-pos)
 		    (+ 1 depth))))))
 
 (defun moves-at-point (pos)
@@ -38,8 +32,8 @@
 
 (defun check-point-pos (pos)
   (let ((pos-point (car pos)))
-    (if (or (= (pos-contents-stored pos-point) 2)
-	    (= (pos-contents-stored pos-point) 3))
+    (if (or (= (pos-contents pos-point) 2)
+	    (= (pos-contents pos-point) 3))
 	(list (car pos))
 	0)))
 
@@ -52,37 +46,5 @@
 	    0
 	    (car (mappend check-point-pos new-list))))))
 
-(defun find-closest-point (pos)
-  (let ((closest-point (find-closest-point-rec (list (list pos pos 99 99 0)))))
-    (if (null closest-point)
-	(if (> *pill-count* 0)
-	    (let ((closest-point (reduce (lambda (acc x)
-					   (if (> (manhattan acc pos)
-						  (manhattan x pos))
-					       x
-					       acc))
-					 (cons 512 512)
-					 *pill-list*)))
-	      (set *stored-world* (annotated-set *stored-world* (cdr closest-point) (car closest-point) (cons 1 0)))
-	      (set *pill-list* (remove-if (lambda (point) (pos-eq closest-point point)) *pill-list*))
-	      (set *pill-count* (- *pill-count* 1))
-	      (cons closest-point (find-closest-point closest-point)))
-	    0)
-	(progn
-	  (set *stored-world* (annotated-set *stored-world* (cdr closest-point) (car closest-point) (cons 1 0)))
-	  (set *pill-list* (remove-if (lambda (point) (pos-eq closest-point point)) *pill-list*))
-	  (set *pill-count* (- *pill-count* 1))
-	  (if (> *pill-count* 0)
-	      (cons closest-point (find-closest-point closest-point))
-	      (cons closest-point 0))))))
-
-(defun walk-pills ()
-  (set *stored-world* (create-annotated-map))
-  (set *pill-list* (mappend-world (lambda (cell)
-				    (if (or (= 2 (car cell))
-					    (= 3 (car cell)))
-					(list (cons *x* *y*))
-					0))
-				  *stored-world*))
-  (set *pill-count* (length *pill-list*))
-  (find-closest-point (car (find-annotated-element 5 *stored-world*))))
+(defun find-point-near (pos)
+  (find-closest-point-rec (list (list pos pos 99 99 0))))

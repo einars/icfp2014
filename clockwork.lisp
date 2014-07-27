@@ -162,8 +162,9 @@
 	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
 
 (defun closest-pill ()
-  (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512)
-	 (car *all-pills*)))
+  (or-if (find-point-near *lambda-man-pos*)
+	 (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512)
+		(car *all-pills*))))
 
 (defun search-for-new-pill ()
   (clean-pill-list *lambda-man-pos*)
