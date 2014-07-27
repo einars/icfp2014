@@ -8,7 +8,7 @@
   new-distance)
 
 (defun ghost-on-pos (pos)
-  (not (null (member-if (lambda (x) (pos-eq pos (second x))) (ghost-state)))))
+  (not (null (member-if (lambda (x) (is-ghost-pos pos x)) (ghost-state)))))
 
 (defun pill-at (val pos distance)
   (let ((new-distance (player-distance pos)))
