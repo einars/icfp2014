@@ -1,1 +1,29 @@
 Victory shall be ours!
+
+Our Lambdaman is written in a beautiful lisp, compiled down (in an actual lisp,
+sbcl) to gcc code. Writing necessary standard library from scratch was fun. 
+
+Lambdaman is cautious, keeping its distance from active ghosts at a distance
+and usin A* to evaluate the map, the next targets and ghost threat.
+
+AI for the ghost is universal one, it tries somewhat agressively to target
+Lambdaman; as a ghost0 it tracks the position of lambdaman; 1 - right
+underneath it, 2 - right of the lambdaman and 3 - to the left of himghost AI
+which tries to target to Lambdaman; as a ghost0 it tracks the position of
+lambdaman; 1 - right underneath it, 2 - right of the lambdaman and 3 - to the
+left of lambdaman, making 4 of these ghosts into a pack of quite painful hound
+dogs.
+
+Ghost compiler is written in OCaml (required opam packages: core, menhir) and
+the ghost code itself is written in an ad-hoc post-assembly language
+vaguely resembling some ugly grandmother of C.
+
+
+Raging Mushrooms team this year were:
+
+  Edmunds Cers
+  Arturs Grebstelis
+  Janis Kovacs
+  Einar Lielmanis
+
+  Contacts: einars@gmail.com
