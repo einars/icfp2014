@@ -9,6 +9,7 @@ submit:
 	mkdir -p staging/code/asm-compile
 	mkdir -p staging/solution
 	bash compile.sh clockwork.lisp > staging/solution/lambdaman.gcc
+	cp README staging/code/
 	cp clockwork.lisp game.lisp lib.lisp preprocess-pils.lisp compile.sh Makefile staging/code/lambdaman
 	cp    ml.asm-compile/Makefile staging/code/asm-compile
 	cp -r ml.asm-compile/src      staging/code/asm-compile
