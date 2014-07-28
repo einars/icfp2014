@@ -53,7 +53,7 @@
       (pos-eq pos (ghost-next-pos ghost))))
 
 (defun is-unsafe-vitality ()
-  (> 500 *vitality*))
+  (> 300 *vitality*))
 
 (defun bad-ghost-near (pos ghost)
   (and (= 0 (first ghost))
@@ -64,13 +64,19 @@
 (defun is-ghost-near (pos)
   (not (null (matching-ghost pos bad-ghost-near))))
 
+(defun is-bad-junction (pos steps tunnel)
+  (and (is-junction pos (second tunnel))
+       (>= 2 (abs (- steps (first tunnel))))))
+
 (defun is-ghost-tunnel (pos steps dir tunnels)
   (cond ((> steps +tunnel-depth+) 0)
 	((null tunnels) 0)
 	((not (is-unsafe-vitality)) 0)
 	((and (pos-eq pos (third (car tunnels)))
-	      (not (= dir (second (car tunnels))))
-	      (> (+ steps 1) (first (car tunnels)))) t)
+	      (or (is-bad-junction pos steps (car tunnels))
+		  (and (not (= dir (second (car tunnels))))
+		       (> (+ steps 2) (first (car tunnels))))))
+	 t)
 	(t (is-ghost-tunnel pos steps dir (cdr tunnels)))))
 
 (defun disabled-pill (pos)
@@ -223,18 +229,22 @@
 (defun going-for-power-pill ()
   (not (null (member-if (lambda (x) (pos-eq x *closest-pill*)) *power-pills*))))
 
+(defun on-ghost-tunnel ()
+  (is-ghost-tunnel *lambda-man-pos* 3 -1 *ghost-tunnels*))
+
 (defun search-for-new-pill ()
   (set *closest-ghost-pos* nil)
   (clean-pill-list *lambda-man-pos*)
   (set *closest-ghost* (find-closest-ghost (ghost-state) 512))
+  (set *closest-pill* (find-point-near *lambda-man-pos*))
   (cond ((and (fruit-on-board) (not (ghost-on-pos *fruit-pos*)))
 	 (set *closest-pill* *fruit-pos*))
-	((and (>= 3 *closest-ghost*)
+	((and (>= 4 *closest-ghost*)
 	      (consp *closest-ghost-pos*)
 	      (not (is-unsafe-vitality)))
 	 (set *closest-pill* *closest-ghost-pos*))
 	((or (null *all-pills*)
-	     (and (>= 3 *closest-ghost*)
+	     (and (on-ghost-tunnel)
 		  (= *vitality* 0)
 		  (consp *power-pills*)))
 	 (set *closest-pill* (closest-power-pill)))
@@ -242,7 +252,7 @@
 	     (lambda-man-on *closest-pill*)
 	     (ghost-on-pos *closest-pill*)
 	     (not (= *lives* (lambda-man-lives)))
-	     (and (> *closest-ghost* 3)
+	     (and (not (on-ghost-tunnel))
 		  (consp *power-pills*)
 		  (going-for-power-pill)))
 	 (set *closest-pill* (closest-pill)))
@@ -272,13 +282,16 @@
 	       (or (= dir (opposite origin))
 		   (is-obstacle (move pos dir)))) *all-dirs*))
 
+(defun is-junction (pos origin)
+  (> (length (possible-moves pos origin)) 1))
+
 (defun mappend-tunnels (pos dir steps)
   (mappend (lambda (new-dir)
 	     (advance-tunnel (move pos new-dir) new-dir (+ steps 1)))
 	   (possible-moves pos dir)))
 
 (defun advance-tunnel (pos dir steps)
-  (if (= steps +tunnel-depth+)
+  (if (and (>= steps +tunnel-depth+) (is-junction pos dir))
       nil
       (cons (list steps dir pos) (mappend-tunnels pos dir steps))))
 
