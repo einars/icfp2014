@@ -202,20 +202,22 @@
   (set *power-pills* (remove-pos *power-pills* pos))
   (set *all-pills* (remove-pos *all-pills* pos)))
 
-(defun find-closest-pill (pos pills best score)
+(defun find-closest-pill (pos pills best score disable-test)
   (if (null pills)
       best
       (let ((new-score (manhattan pos (car pills))))
-	(if (or (> new-score score) (disabled-pill (car pills)))
-	    (find-closest-pill pos (cdr pills) best score)
-	    (find-closest-pill pos (cdr pills) (car pills) new-score)))))
+	(if (or (> new-score score)
+		(and disable-test (disabled-pill (car pills))))
+	    (find-closest-pill pos (cdr pills) best score disable-test)
+	    (find-closest-pill pos (cdr pills) (car pills)
+			       new-score disable-test)))))
 
 (defun closest-power-pill ()
-  (find-closest-pill *lambda-man-pos* *power-pills* nil 512))
+  (find-closest-pill *lambda-man-pos* *power-pills* nil 512 0))
 
 (defun closest-pill ()
   (or-if (find-point-near *lambda-man-pos*)
-	 (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512)
+	 (or-if (find-closest-pill *lambda-man-pos* *all-pills* nil 512 t)
 		(car *all-pills*))))
 
 (defun going-for-power-pill ()
