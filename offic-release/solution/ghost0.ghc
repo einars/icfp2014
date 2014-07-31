@@ -1,0 +1,190 @@
+MOV H, 255
+INT 3
+MOV [0], A
+INT 5
+MOV [2], A
+MOV [3], B
+ADD [11], 1
+MOV A, [0]
+INT 6
+MOV [5], A
+MOV [4], B
+MOV [20], 0
+JEQ 14, [4], 0
+MOV PC, 15; #2
+MOV [20], 2
+JEQ 17, [4], 1
+MOV PC, 18; #4
+MOV [20], 3
+JEQ 20, [4], 3
+MOV PC, 21; #6
+MOV [20], 1
+INT 1
+MOV [8], A
+MOV [9], B
+JLT 26, [11], 7
+MOV PC, 29; #8
+MOV [H], 29
+DEC H
+MOV PC, 173; scatter
+JEQ 31, [5], 1
+MOV PC, 33; #11
+MOV [8], 0
+MOV [9], 0
+MOV C, [0]
+JEQ 44, C, 0
+JEQ 37, [0], 1
+MOV PC, 38; #14
+MOV C, 2
+JEQ 40, [0], 2
+MOV PC, 41; #16
+MOV C, 1
+MOV [H], 44
+DEC H
+MOV PC, 79; advance_target
+MOV [H], 47
+DEC H
+MOV PC, 48; find_good_move
+HLT
+MOV C, [2]
+MOV D, [3]
+MOV E, 0
+ADD E, [0]
+AND E, 3
+MOV [H], 56
+DEC H
+MOV PC, 97; map_at_direction
+JEQ 75, B, 1
+ADD E, 1
+AND E, 3
+MOV [H], 62
+DEC H
+MOV PC, 97; map_at_direction
+JEQ 75, B, 1
+ADD E, 1
+AND E, 3
+MOV [H], 68
+DEC H
+MOV PC, 97; map_at_direction
+JEQ 75, B, 1
+ADD E, 1
+AND E, 3
+MOV [H], 74
+DEC H
+MOV PC, 97; map_at_direction
+JEQ 77, B, 0
+MOV A, E
+INT 0
+INC H
+MOV PC, [H]
+JEQ 81, C, 3
+MOV PC, 84; #25
+SUB [8], 1
+JLT 84, [8], 127
+MOV [8], 0
+JEQ 86, C, 1
+MOV PC, 87; #28
+ADD [8], 1
+JEQ 89, C, 0
+MOV PC, 92; #30
+SUB [9], 1
+JLT 92, [9], 127
+MOV [9], 0
+JEQ 94, C, 2
+MOV PC, 95; #33
+ADD [9], 1
+INC H
+MOV PC, [H]
+JEQ 99, E, [20]
+MOV PC, 103; #35
+MOV A, 0
+MOV B, 0
+INC H
+MOV PC, [H]
+MOV [10], 0
+JLT 108, C, [8]
+MOV G, C
+SUB G, [8]
+ADD [10], G
+JGT 112, C, [8]
+MOV G, [8]
+SUB G, C
+ADD [10], G
+JLT 116, D, [9]
+MOV G, D
+SUB G, [9]
+ADD [10], G
+JGT 120, D, [9]
+MOV G, [9]
+SUB G, D
+ADD [10], G
+MOV F, [10]
+MOV A, C
+MOV B, D
+JEQ 125, E, 3
+MOV PC, 126; #41
+SUB A, 1
+JEQ 128, E, 1
+MOV PC, 129; #43
+ADD A, 1
+JEQ 131, E, 0
+MOV PC, 132; #45
+SUB B, 1
+JEQ 134, E, 2
+MOV PC, 135; #47
+ADD B, 1
+JLT 139, A, [8]
+MOV G, A
+SUB G, [8]
+SUB [10], G
+JGT 143, A, [8]
+MOV G, [8]
+SUB G, A
+SUB [10], G
+JLT 147, B, [9]
+MOV G, B
+SUB G, [9]
+SUB [10], G
+JGT 151, B, [9]
+MOV G, [9]
+SUB G, B
+SUB [10], G
+INT 7
+MOV B, 0
+JEQ 159, A, 0
+MOV [H], 157
+DEC H
+MOV PC, 161; slight_chance_of_moving
+JGT 159, [10], 127
+MOV B, 1
+INC H
+MOV PC, [H]
+JEQ 163, [6], 0
+MOV PC, 166; #56
+MOV [6], 1
+MOV [7], [0]
+ADD [7], 4
+MUL [7], 179
+ADD [7], 177
+MOV B, 0
+JGT 171, [7], F
+MOV B, 1
+INC H
+MOV PC, [H]
+MOV [8], 3
+MOV [9], 3
+MOV A, [0]
+AND A, 3
+JEQ 179, A, 1
+MOV PC, 180; #59
+MOV [8], 120
+JEQ 182, A, 2
+MOV PC, 183; #61
+MOV [9], 120
+JEQ 185, A, 3
+MOV PC, 187; #63
+MOV [8], 120
+MOV [9], 120
+INC H
+MOV PC, [H]
+; code size = 189
